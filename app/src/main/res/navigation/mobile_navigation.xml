@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="app.list.mymusic.ui.home.HomeFragment"
+        android:label="@string/inicio"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_music"
+        android:name="app.list.mymusic.ui.music.MusicFragment"
+        android:label="@string/my_music"
+        tools:layout="@layout/fragment_music" />
+
+    <fragment
+        android:id="@+id/nav_youtube"
+        android:name="app.list.mymusic.ui.youtube.YouTubeFragment"
+        android:label="@string/youtube"
+        tools:layout="@layout/fragment_youtube" />
+
+    <fragment
+        android:id="@+id/nav_ctg"
+        android:name="app.list.mymusic.ui.ctg.CtgFragment"
+        android:label="@string/categories"
+        tools:layout="@layout/fragment_ctg" />
+</navigation>

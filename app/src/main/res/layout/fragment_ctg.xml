@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.ctg.CtgFragment">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="3sp"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="3dp"
+        android:layout_marginBottom="4dp"
+        app:cardElevation="2dp"
+        app:cardCornerRadius="4dp">
+        <RelativeLayout
+            android:orientation="vertical"
+            android:padding="9dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <!--<HorizontalScrollView
+                android:id="@+id/scroll"
+                android:layout_below="@+id/carview1"
+                android:background="@android:color/white"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:id="@+id/ly_content_menu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                </LinearLayout>
+            </HorizontalScrollView>-->
+
+            <Button
+                android:id="@+id/btnAdd"
+                android:text="Nuevo registro"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/btn_primary"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:paddingLeft="6dp"
+                android:drawablePadding="5dp"
+                android:drawableLeft="@drawable/ic_add"
+                android:paddingRight="10dp"
+                android:layout_height="40dp"/>
+
+
+            <TextView
+                android:id="@+id/txt_registros"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:text="Registros: cargando..."
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txt_no_register"
+                android:text="@string/no_register"
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="30dp"
+                android:textStyle="bold"
+                android:textSize="15dp"
+                android:visibility="gone"
+                android:layout_height="wrap_content"/>
+            <LinearLayout
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:background="#ccc"
+                android:layout_below="@+id/btnAdd"
+                android:layout_height="0.5dp"/>
+            <ListView
+                android:id="@+id/listView"
+                android:layout_below="@+id/btnAdd"
+                android:dividerHeight="0.5dp"
+                android:layout_marginTop="8dp"
+                android:divider="#ccc"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:elevation="5dp"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_margin="15dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>

@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">Mi Reproductor</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="load">Cargando...</string>
+    <string name="select_ctg">Seleccionar categoria</string>
+    <string name="media_route_menu_title">Enlazar TV</string>
+    <string name="inicio">Inicio</string>
+    <string name="my_music">Mi Musica</string>
+    <string name="youtube">YouTube</string>
+    <string name="categories">Categorias</string>
+    <string name="no_id_video">¡No se pudo obtener el ID del Video!\nVerifique que la direccion URL sea un video</string>
+
+    <string name="accept">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="error">Error</string>
+    <string name="info">Información</string>
+    <string name="warning">Advertencia</string>
+    <string name="new_music">Nueva Musica</string>
+    <string name="edit">Editar</string>
+    <string name="save_changue">Guardar Cambios</string>
+    <string name="enter_name">Ingrese en nombre!</string>
+    <string name="new_category">Nueva Categoria</string>
+    <string name="category">Categoria</string>
+    <string name="description">Descripción</string>
+    <string name="save">Guardar</string>
+    <string name="edit_category">Editar Categoria</string>
+    <string name="exits_ctg">¡Ya existe una categoría con el nombre %1$s!</string>
+    <string name="no_register">¡No hay registros!</string>
+    <string name="text_registros">Registros: %d</string>
+    <string name="name_music">Nombre de la musica</string>
+    <string name="saving">Guardando datos...</string>
+    <string name="saved">Guardado correctamente</string>
+    <string name="updated">Datos actualizado correctamente</string>
+    <string name="are_you_sure_you_want_delete">¿Estás seguro de que quieres eliminar el registro %1$s?</string>
+
+</resources>
