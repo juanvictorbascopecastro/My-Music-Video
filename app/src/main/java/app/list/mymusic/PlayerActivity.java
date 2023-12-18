@@ -26,6 +26,10 @@ import androidx.mediarouter.media.MediaControlIntent;
 import androidx.mediarouter.media.MediaRouteSelector;
 import androidx.mediarouter.media.MediaRouter;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener;
@@ -35,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import app.list.mymusic.dialog.progress;
+import app.list.mymusic.firebase.MusicDb;
 import app.list.mymusic.models.CtgMusic;
 import app.list.mymusic.models.YTVideo;
 
@@ -55,7 +61,7 @@ public class PlayerActivity extends AppCompatActivity {
     private MediaRouter mRouter;
     private MediaRouter.Callback mCallback;
     private MediaRouteSelector mSelector;
-    private boolean es_ctg_privada = false;
+    private MusicDb db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +74,7 @@ public class PlayerActivity extends AppCompatActivity {
         btnSelect = findViewById(R.id.btnSelect);
         btnScreenRotation = findViewById(R.id.btnScreenRotation);
         //youTubePlayerView.enterFullScreen();
+        db = new MusicDb();
 
         mRouter = MediaRouter.getInstance(this);
         mSelector = new MediaRouteSelector.Builder()
@@ -82,7 +89,6 @@ public class PlayerActivity extends AppCompatActivity {
             youTube = (YTVideo) bundle.getSerializable("music");
             contador_minuto = bundle.getFloat("minuto");
             contador = bundle.getInt("position");
-            es_ctg_privada = bundle.getBoolean("privada");
             list = (ArrayList<YTVideo>) bundle.getSerializable("list");
             list_ctg = (ArrayList<CtgMusic>) bundle.getSerializable("categorias");
             if(list != null){
@@ -248,8 +254,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 alert.dismiss();
-                if(es_ctg_privada) LoadMyMusic(list_ctg.get(position).getCode());
-                else LoadMusic(list_ctg.get(position).getCode());
+                LoadMusic(list_ctg.get(position).getCode());
             }
         });
         alert.show();
@@ -504,23 +509,28 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    public void LoadMusic(String idctg){
-        msjProsgress(getString(R.string.load));
+    public void LoadMusic(String ctgCode){
+        progress.run(getString(R.string.load), PlayerActivity.this);
+        list = new ArrayList<>();
+        db.loadMusic(ctgCode).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                progress.diss();
+                if(task.isSuccessful()) {
+                    YTVideo ytVideo;
+                    for(QueryDocumentSnapshot snapshot : task.getResult()) {
+                        ytVideo = snapshot.toObject(YTVideo.class);
+                        ytVideo.setCode(snapshot.getId());
+                        list.add(ytVideo);
+                    }
+                    contador = 0;
+                    contador_minuto = 0;
+                    player.cueVideo(list.get(contador).getIdvideo(), contador_minuto);
+                    player.play();
+                }
+                // musicViewModel.setList(list);
+            }
 
+        });
     }
-    public void LoadMyMusic(String idctg){
-        msjProsgress(getString(R.string.load));
-
-    }
-
-    private ProgressDialog progress;
-    private void msjProsgress(String msj){
-        progress = new ProgressDialog(PlayerActivity.this);
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setIndeterminate(true);
-        progress.setCancelable(false);
-        progress.setMessage(msj);
-        progress.show();
-    }
-
 }
