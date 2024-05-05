@@ -33,6 +33,7 @@ import app.list.mymusic.PlayerActivity;
 import app.list.mymusic.R;
 import app.list.mymusic.adapter.CtgAdapterHorizontal;
 import app.list.mymusic.adapter.RecyclerViewAdapter;
+import app.list.mymusic.adapter.VideoAdapterAdapter;
 import app.list.mymusic.databinding.FragmentMusicBinding;
 import app.list.mymusic.dialog.progress;
 import app.list.mymusic.firebase.CtgDb;
@@ -51,7 +52,7 @@ public class MusicFragment extends Fragment implements MusicListener {
     private FloatingActionButton fab;
 
     private FragmentMusicBinding binding;
-    public RecyclerViewAdapter recyclerViewAdapter;
+    public VideoAdapterAdapter recyclerViewAdapter;
     MusicViewModel musicViewModel;
     CtgViewModel ctgViewModel;
     private MusicDb db;
@@ -85,12 +86,12 @@ public class MusicFragment extends Fragment implements MusicListener {
             }
         });
 
-        musicViewModel.getList().observe(getViewLifecycleOwner(), new Observer<ArrayList<YTVideo>>() {
+        /* musicViewModel.getList().observe(getViewLifecycleOwner(), new Observer<ArrayList<YTVideo>>() {
             @Override
             public void onChanged(ArrayList<YTVideo> ytVideos) {
                 showData();
             }
-        });
+        }); */
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -160,13 +161,14 @@ public class MusicFragment extends Fragment implements MusicListener {
                     }
                 }
                 musicViewModel.setList(list);
+                showData();
             }
 
         });
     }
     private void showData(){
         progressBar.setVisibility(View.GONE);
-        recyclerViewAdapter = new RecyclerViewAdapter(getContext(), list, this.getLifecycle(), this);
+        recyclerViewAdapter = new VideoAdapterAdapter(list, this.getLifecycle(), MusicFragment.this);
         recycler_view.setAdapter(recyclerViewAdapter);
         recycler_view.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerViewAdapter.notifyDataSetChanged();
@@ -203,17 +205,17 @@ public class MusicFragment extends Fragment implements MusicListener {
     }
 
     @Override
-    public void onDeletePosition(YTVideo ytVideo) {
-        msjConfirDelete(list.get(position));
+    public void onDeletePosition(int index) {
+        msjConfirDelete(index);
     }
 
-    private void msjConfirDelete(final YTVideo ytVideo){
+    private void msjConfirDelete(int index){
         final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setMessage(Html.fromHtml("<font color='#be0d13'>"+getString(R.string.are_you_sure_you_want_delete, ytVideo.getName())+"</font>"))
+        builder.setMessage(Html.fromHtml("<font color='#be0d13'>"+getString(R.string.are_you_sure_you_want_delete, list.get(index).getName().toUpperCase())+"</font>"))
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, int id) {
-                       DelitingMusic(ytVideo);
+                       DelitingMusic(index);
                     }
                 }).setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialogo, int id) {
@@ -223,7 +225,8 @@ public class MusicFragment extends Fragment implements MusicListener {
         AlertDialog alert = builder.create();
         alert.show();
     }
-    private void DelitingMusic(YTVideo ytVideo){
+    private void DelitingMusic(int index){
+        YTVideo ytVideo = list.get(index);
         progress.run("Eliminando registro...", getContext());
         db.deleteMusic(ytVideo.getCode()).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -232,7 +235,7 @@ public class MusicFragment extends Fragment implements MusicListener {
                 if(task.isSuccessful()){
                     Toast.makeText(getContext(), "Registro eliminado correctamente", Toast.LENGTH_LONG).show();
                     musicViewModel.deleteItemByCode(ytVideo.getCode());
-                    list = musicViewModel.getList().getValue();
+                    recyclerViewAdapter.removeItem(index);
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {

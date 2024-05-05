@@ -4,16 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:backgroundTint="@color/white"
+    android:background="@color/white"
     tools:context=".ui.music.MusicFragment">
+
     <RelativeLayout
         android:id="@+id/rlCategory"
         android:padding="6dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/reciclerViewCategory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+
     </RelativeLayout>
 
     <TextView
@@ -23,12 +28,15 @@
         android:layout_marginLeft="5dp"
         android:layout_marginTop="20dp"
         android:textAllCaps="true" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_below="@+id/rlCategory"
         android:layout_marginTop="2dp"
+        android:dividerHeight="2dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
     <TextView
         android:id="@+id/txt_no_register"
         android:text="@string/no_register"

@@ -35,7 +35,6 @@ import app.list.mymusic.models.CtgMusic;
 public class CtgFragment extends Fragment implements CtgListener {
     private ArrayList<CtgMusic> list;
     private ProgressBar progressBar;
-    private Button btnAdd;
     private ListView listView;
     private TextView txt_no_register, text_registros;
     CtgViewModel ctgViewModel;
@@ -51,7 +50,6 @@ public class CtgFragment extends Fragment implements CtgListener {
         View root = binding.getRoot();
 
         listView = binding.listView;
-        btnAdd = binding.btnAdd;
         txt_no_register = binding.txtNoRegister;
         text_registros = binding.txtRegistros;
         progressBar = binding.progressBar;
@@ -63,7 +61,7 @@ public class CtgFragment extends Fragment implements CtgListener {
                 showList();
             }
         });
-        btnAdd.setOnClickListener(new View.OnClickListener() {
+        binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new AddCtg(getContext(), null, CtgFragment.this, ctgViewModel);

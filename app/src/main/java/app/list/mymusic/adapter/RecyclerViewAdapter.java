@@ -161,7 +161,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             btnDelete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onDeletePosition(list.get(getAdapterPosition()));
+                    int position = getAdapterPosition(); // Captura la posición donde se hizo clic
+                    if (position != RecyclerView.NO_POSITION)
+                        listener.onDeletePosition(position);
                 }
             });
         }

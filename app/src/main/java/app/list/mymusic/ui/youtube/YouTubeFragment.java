@@ -136,4 +136,14 @@ public class YouTubeFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    public boolean canGoBack(){
+        return webView.canGoBack();
+    }
+
+    public void goBack(){
+        webView.goBack();
+    }
+
+
 }

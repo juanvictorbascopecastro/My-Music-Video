@@ -6,7 +6,7 @@ import app.list.mymusic.models.YTVideo;
 public interface MusicListener {
     void onNewRegister(String data);
     void onSecordPlayer(float second);
-    void onDeletePosition(YTVideo ytVideo);
+    void onDeletePosition(int position);
     void onSeletedCtg(CtgMusic ctgMusic);
     void onSetPosition(int position);
 }
