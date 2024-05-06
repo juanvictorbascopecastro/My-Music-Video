@@ -29,11 +29,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import app.list.mymusic.R;
-import app.list.mymusic.firebase.MusicDb;
+import app.list.mymusic.firebase.MusicDataBase;
+import app.list.mymusic.interfaces.DbMusicListener;
 import app.list.mymusic.models.CtgMusic;
 import app.list.mymusic.models.YTVideo;
 
-public class AddMusic extends AlertDialog {
+public class AddMusic extends AlertDialog implements DbMusicListener {
         private Context context;
         AlertDialog alertDialog;
         private EditText editURL, editName, editDetails, editCode;
@@ -44,7 +45,7 @@ public class AddMusic extends AlertDialog {
         private Spinner spinner;
         Fragment frm;
         private msgInfo msg;
-        private MusicDb db;
+        private MusicDataBase db;
 
         public AddMusic(Context context, ArrayList<CtgMusic> list,String url, String id_video) {
             super(context);
@@ -78,7 +79,7 @@ public class AddMusic extends AlertDialog {
 
             editURL.setText(url);
             editCode.setText(id_video);
-            db = new MusicDb();
+            db = new MusicDataBase(getContext(), AddMusic.this);
             msg = new msgInfo(getContext());
 
             categorias = new String[list_ctg.size()];
@@ -191,5 +192,8 @@ public class AddMusic extends AlertDialog {
         }
 
 
+    @Override
+    public void errorLoadedMusicPlayList(String message, int icon) {
 
+    }
 }

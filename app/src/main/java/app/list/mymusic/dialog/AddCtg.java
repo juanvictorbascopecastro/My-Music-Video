@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import app.list.mymusic.R;
-import app.list.mymusic.firebase.CtgDb;
+import app.list.mymusic.firebase.CtgDataBase;
 import app.list.mymusic.interfaces.CtgListener;
 import app.list.mymusic.models.CtgMusic;
 import app.list.mymusic.ui.ctg.CtgViewModel;
@@ -35,7 +35,7 @@ public class AddCtg extends AlertDialog {
     CtgMusic ctgMusic;
     private EditText editName, editDetails;
     private msgInfo msg;
-    private CtgDb db;
+    private CtgDataBase db;
     CtgListener listener;
     CtgViewModel ctgViewModel;
     public AddCtg(Context context, CtgMusic ctgMusic, CtgListener listener, CtgViewModel ctgViewModel) {
@@ -58,7 +58,7 @@ public class AddCtg extends AlertDialog {
             Button btnSend = vista.findViewById(R.id.btnSend);
 
             msg = new msgInfo(getContext());
-            db = new CtgDb();
+            db = new CtgDataBase();
 
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setView(vista);

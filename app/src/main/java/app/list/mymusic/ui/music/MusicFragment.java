@@ -1,5 +1,6 @@
 package app.list.mymusic.ui.music;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,12 +9,12 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -29,22 +30,22 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
-import app.list.mymusic.PlayerActivity;
+import app.list.mymusic.PlayerFullscreenActivity;
 import app.list.mymusic.R;
 import app.list.mymusic.adapter.CtgAdapterHorizontal;
-import app.list.mymusic.adapter.RecyclerViewAdapter;
 import app.list.mymusic.adapter.VideoAdapterAdapter;
 import app.list.mymusic.databinding.FragmentMusicBinding;
 import app.list.mymusic.dialog.progress;
-import app.list.mymusic.firebase.CtgDb;
-import app.list.mymusic.firebase.MusicDb;
+import app.list.mymusic.firebase.CtgDataBase;
+import app.list.mymusic.firebase.MusicDataBase;
+import app.list.mymusic.interfaces.DbMusicListener;
 import app.list.mymusic.interfaces.MusicListener;
 import app.list.mymusic.models.CtgMusic;
 import app.list.mymusic.models.YTVideo;
 import app.list.mymusic.ui.ctg.CtgViewModel;
 import app.list.mymusic.utils.Constants;
 
-public class MusicFragment extends Fragment implements MusicListener {
+public class MusicFragment extends Fragment implements MusicListener, DbMusicListener {
     private ArrayList<YTVideo> list;
     private RecyclerView recycler_view;
     private ProgressBar progressBar;
@@ -55,8 +56,8 @@ public class MusicFragment extends Fragment implements MusicListener {
     public VideoAdapterAdapter recyclerViewAdapter;
     MusicViewModel musicViewModel;
     CtgViewModel ctgViewModel;
-    private MusicDb db;
-    private CtgDb ctgDb;
+    private MusicDataBase db;
+    private CtgDataBase ctgDb;
     private CtgMusic ctgMusic;
     private RecyclerView recyclerViewCategory;
 
@@ -76,8 +77,8 @@ public class MusicFragment extends Fragment implements MusicListener {
         txtTitle = binding.txtTitle;
         fab = binding.fab;
         recycler_view.setHasFixedSize(true);
-        db = new MusicDb();
-        ctgDb = new CtgDb();
+        db = new MusicDataBase(getContext(), this);
+        ctgDb = new CtgDataBase();
         LoadCtg();
         ctgViewModel.getList().observe(getViewLifecycleOwner(), new Observer<ArrayList<CtgMusic>>() {
             @Override
@@ -95,7 +96,7 @@ public class MusicFragment extends Fragment implements MusicListener {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext(), PlayerActivity.class);
+                Intent intent = new Intent(getContext(), PlayerFullscreenActivity.class);
                 Bundle bundle = new Bundle();
                 //bundle.putSerializable("music", youTube);
                 bundle.putFloat("minuto", minuto);
@@ -125,7 +126,6 @@ public class MusicFragment extends Fragment implements MusicListener {
                     }
                 }
                 ctgViewModel.setList(listCtg);
-                progress.diss();
             }
         });
     }
@@ -134,7 +134,11 @@ public class MusicFragment extends Fragment implements MusicListener {
         ArrayList<CtgMusic> listCat = ctgViewModel.getList().getValue();
         if(listCat.size() > 0) {
             if(ctgMusic == null) ctgMusic = listCat.get(0);
-            LoadData();
+            // cargar lista de playlist
+            list = new ArrayList<>();
+            progressBar.setVisibility(View.VISIBLE);
+            if(ctgMusic == null) return;
+            db.LoadByCtg(ctgMusic.getCode(), false);
             LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false);
             recyclerViewCategory.setLayoutManager(layoutManager);
             CtgAdapterHorizontal ctgAdapterHorizontal =
@@ -145,27 +149,18 @@ public class MusicFragment extends Fragment implements MusicListener {
         }
     }
 
-    public void LoadData(){
-        list = new ArrayList<>();
-        progressBar.setVisibility(View.VISIBLE);
-        if(ctgMusic == null) return;
-        db.loadMusic(ctgMusic.getCode()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful()) {
-                    YTVideo ytVideo;
-                    for(QueryDocumentSnapshot snapshot : task.getResult()) {
-                        ytVideo = snapshot.toObject(YTVideo.class);
-                        ytVideo.setCode(snapshot.getId());
-                        list.add(ytVideo);
-                    }
-                }
-                musicViewModel.setList(list);
-                showData();
-            }
-
-        });
+    @Override
+    public void loadedMusicPlaylist(ArrayList<YTVideo> playList) {
+        musicViewModel.setList(playList);
+        list = playList;
+        showData();
     }
+
+    @Override
+    public void errorLoadedMusicPlayList(String message, int icon) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+    }
+
     private void showData(){
         progressBar.setVisibility(View.GONE);
         recyclerViewAdapter = new VideoAdapterAdapter(list, this.getLifecycle(), MusicFragment.this);
@@ -181,7 +176,6 @@ public class MusicFragment extends Fragment implements MusicListener {
             txt_no_register.setVisibility(View.GONE);
         }
     }
-
 
     @Override
     public void onDestroyView() {
@@ -250,6 +244,23 @@ public class MusicFragment extends Fragment implements MusicListener {
     @Override
     public void onSeletedCtg(CtgMusic ctgMusic) {
         this.ctgMusic = ctgMusic;
-        LoadData();
+        db.LoadByCtg(ctgMusic.getCode(), true);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.SECOND_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    int minuto = data.getIntExtra("minuto", 0);
+                    int position = data.getIntExtra("position", 0);
+                    System.out.println("MINUTO: " + minuto);
+                    System.out.println("POSICION: " + position);
+                }
+            } else {
+                // El resultado no fue exitoso, manejar según sea necesario
+            }
+        }
     }
 }

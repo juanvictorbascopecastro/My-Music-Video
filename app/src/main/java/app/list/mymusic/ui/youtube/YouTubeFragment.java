@@ -8,9 +8,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,13 +24,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
 import app.list.mymusic.R;
-import app.list.mymusic.adapter.CtgAdapter;
-import app.list.mymusic.databinding.FragmentCtgBinding;
 import app.list.mymusic.databinding.FragmentYoutubeBinding;
 import app.list.mymusic.dialog.AddMusic;
 import app.list.mymusic.dialog.msgInfo;
 import app.list.mymusic.dialog.progress;
-import app.list.mymusic.firebase.CtgDb;
+import app.list.mymusic.firebase.CtgDataBase;
 import app.list.mymusic.models.CtgMusic;
 import app.list.mymusic.ui.ctg.CtgViewModel;
 import app.list.mymusic.utils.idurl.YouTubeHelperTest;
@@ -46,7 +42,7 @@ public class YouTubeFragment extends Fragment {
     private ArrayList<CtgMusic> list;
     private msgInfo msg;
     CtgViewModel ctgViewModel;
-    private CtgDb db;
+    private CtgDataBase db;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -69,7 +65,7 @@ public class YouTubeFragment extends Fragment {
         msg = new msgInfo(getContext());
 
         ctgViewModel = new ViewModelProvider(this).get(CtgViewModel.class);
-        db = new CtgDb();
+        db = new CtgDataBase();
         list = new ArrayList<>();
         LoadCtg();
         webView.setWebChromeClient(new WebChromeClient() {

@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,7 +27,7 @@ import app.list.mymusic.adapter.CtgAdapter;
 import app.list.mymusic.databinding.FragmentCtgBinding;
 import app.list.mymusic.dialog.AddCtg;
 import app.list.mymusic.dialog.progress;
-import app.list.mymusic.firebase.CtgDb;
+import app.list.mymusic.firebase.CtgDataBase;
 import app.list.mymusic.interfaces.CtgListener;
 import app.list.mymusic.models.CtgMusic;
 
@@ -40,7 +39,7 @@ public class CtgFragment extends Fragment implements CtgListener {
     CtgViewModel ctgViewModel;
     private CtgAdapter ctgAdapter;
     private FragmentCtgBinding binding;
-    private CtgDb db;
+    private CtgDataBase db;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -53,7 +52,7 @@ public class CtgFragment extends Fragment implements CtgListener {
         txt_no_register = binding.txtNoRegister;
         text_registros = binding.txtRegistros;
         progressBar = binding.progressBar;
-        db = new CtgDb();
+        db = new CtgDataBase();
         LoadData();
         ctgViewModel.getList().observe(getViewLifecycleOwner(), new Observer<ArrayList<CtgMusic>>() {
             @Override

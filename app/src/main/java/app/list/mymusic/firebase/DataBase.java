@@ -2,10 +2,10 @@ package app.list.mymusic.firebase;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class Db {
+public class DataBase {
     public static FirebaseFirestore db;
 
-    public Db(){
+    public DataBase(){
         db = FirebaseFirestore.getInstance();
     }
 }

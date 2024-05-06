@@ -7,8 +7,8 @@ import java.util.HashMap;
 
 import app.list.mymusic.utils.Constants;
 
-public class CtgDb extends Db{
-    public CtgDb(){
+public class CtgDataBase extends DataBase {
+    public CtgDataBase(){
         super();
     }
     public Task loadCtg(){
