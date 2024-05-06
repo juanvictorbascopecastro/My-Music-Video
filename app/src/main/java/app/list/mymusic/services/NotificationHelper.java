@@ -1,11 +1,13 @@
 package app.list.mymusic.services;
 
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.widget.RemoteViews;
 
@@ -55,7 +57,7 @@ public class NotificationHelper {
         remoteViews.setImageViewResource(R.id.btnPrevious, isPreviewActive ? R.drawable.ic_previous : R.drawable.ic_previous_disabled);
 
         Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.music)
+                .setSmallIcon(R.drawable.logo_youtube)
                 .setCustomContentView(remoteViews)  // Establecer el diseño personalizado
                 .setContentIntent(contentIntent)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -67,6 +69,7 @@ public class NotificationHelper {
 
     public void cancelNotification() {
         notificationManager.cancel(NOTIFICATION_ID);
+        context.stopService(new Intent(context, YouTubeBackgroundService.class));
     }
     private static final int MAX_TITLE_LENGTH = 30; // Elige el número máximo de caracteres a mostrar
 

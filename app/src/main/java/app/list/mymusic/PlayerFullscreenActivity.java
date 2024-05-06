@@ -42,6 +42,7 @@ import app.list.mymusic.models.CtgMusic;
 import app.list.mymusic.models.YTVideo;
 import app.list.mymusic.services.NotificationHelper;
 import app.list.mymusic.services.PlayerEventBroadcaster;
+import app.list.mymusic.services.YouTubeBackgroundService;
 
 public class PlayerFullscreenActivity extends AppCompatActivity implements DbMusicListener, PlayerListener {
     private ActivityPlayerFullscreenBinding binding;
@@ -59,7 +60,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     private MediaRouter mRouter;
     private MediaRouter.Callback mCallback;
     private MediaRouteSelector mSelector;
-
+    ////////////
     private NotificationHelper notificationHelper;
     private PlayerEventBroadcaster eventBroadcaster;
     private boolean isPlaying = false;
@@ -69,6 +70,8 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         binding = ActivityPlayerFullscreenBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        youTubePlayerView = binding.youtubePlayerView;
+        getLifecycle().addObserver(youTubePlayerView);
 
         musicDataBase = new MusicDataBase(PlayerFullscreenActivity.this, this);
 
@@ -98,7 +101,6 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             }
             disabledButton();
             initYouTubePlayerView();
-            youTubePlayerView.enableBackgroundPlayback(true);
         }
 
         binding.btnScreenRotation.setOnClickListener(new View.OnClickListener() {
@@ -125,12 +127,10 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         binding.btnSelect.setOnClickListener(view -> {
             SelectCtg();
         });
+        youTubePlayerView.enableBackgroundPlayback(true);
     }
 
     private void initYouTubePlayerView() {
-        youTubePlayerView = findViewById(R.id.youtube_player_view);
-        getLifecycle().addObserver(youTubePlayerView);
-
         // iniciar picture para reproducir
         initPictureInPicture();
         // Reiniciar el broadcast en segundo plano
@@ -180,8 +180,13 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
                 NextVideo(youTubePlayer);
                 return "ENDED";
             case PLAYING:
+                isPlaying = true;
+                ShowButton();
+                showNotification();
                 return "PLAYING";
             case PAUSED:
+                isPlaying = false;
+                showNotification();
                 return "PAUSED";
             case BUFFERING:
                 return "BUFFERING";
@@ -267,6 +272,11 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             unregisterReceiver(eventBroadcaster.playbackReceiver);
         }
         // cancelNotification();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // if(ytPlayer != null) ytPlayer.play();
     }
     private final class MyCallback extends MediaRouter.Callback {
         // Implement callback methods as needed.

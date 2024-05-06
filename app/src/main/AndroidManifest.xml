@@ -11,9 +11,9 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/music"
+        android:icon="@drawable/logo_youtube"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/music"
+        android:roundIcon="@drawable/logo_youtube"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyMusic"
         tools:targetApi="31">
@@ -39,6 +39,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".services.YouTubeBackgroundService"/>
+
     </application>
 
 </manifest>
