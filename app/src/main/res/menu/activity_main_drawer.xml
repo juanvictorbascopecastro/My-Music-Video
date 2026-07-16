@@ -21,5 +21,10 @@
             android:id="@+id/nav_ctg"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/categories" />
+
+        <item
+            android:id="@+id/nav_my_videos"
+            android:icon="@drawable/ic_youtube"
+            android:title="Mis Videos" />
     </group>
 </menu>

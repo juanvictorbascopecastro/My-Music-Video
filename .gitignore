@@ -13,4 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Archivos de configuración y credenciales
+google-services.json
 app/google-services.json
+*.jks
+*.keystore
+
+# Directorios de build locales
+/youtube-player-core/build

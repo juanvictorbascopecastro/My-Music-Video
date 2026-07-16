@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_music, R.id.nav_youtube,  R.id.nav_ctg)
+                R.id.nav_home, R.id.nav_music, R.id.nav_youtube,  R.id.nav_ctg, R.id.nav_my_videos)
                 .setOpenableLayout(drawer)
                 .build();
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -77,6 +77,29 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == R.id.action_logout) {
+            com.google.firebase.auth.FirebaseAuth.getInstance().signOut();
+            
+            int webClientIdRes = getResources().getIdentifier("default_web_client_id", "string", getPackageName());
+            String webClientId = webClientIdRes != 0 ? getString(webClientIdRes) : "DUMMY_CLIENT_ID";
+            com.google.android.gms.auth.api.signin.GoogleSignInOptions gso = new com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(webClientId)
+                    .requestEmail()
+                    .build();
+            com.google.android.gms.auth.api.signin.GoogleSignInClient mGoogleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(this, gso);
+            mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+                android.content.Intent intent = new android.content.Intent(MainActivity.this, LoginActivity.class);
+                intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            });
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

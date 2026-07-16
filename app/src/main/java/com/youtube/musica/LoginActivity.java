@@ -20,6 +20,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.AuthCredential;
@@ -81,6 +82,7 @@ public class LoginActivity extends AppCompatActivity {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(webClientId)
                     .requestEmail()
+                    .requestScopes(new Scope("https://www.googleapis.com/auth/youtube.readonly"))
                     .build();
             mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         }

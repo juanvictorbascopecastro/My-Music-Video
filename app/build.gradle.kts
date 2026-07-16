@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
@@ -16,6 +19,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(FileInputStream(localPropertiesFile))
+        }
+        val youtubeApiKey: String = localProperties.getProperty("YOUTUBE_API_KEY") ?: "\"\""
+        buildConfigField("String", "YOUTUBE_API_KEY", youtubeApiKey)
     }
 
     buildTypes {
@@ -30,6 +41,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -53,9 +65,12 @@ dependencies {
     implementation("com.google.firebase:firebase-auth:24.2.0")
     implementation("com.google.firebase:firebase-crashlytics:19.0.1")
     implementation("com.google.android.gms:play-services-auth:21.6.0")
-    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:13.0.0")
-    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.32")
+    implementation(project(":youtube-player-core"))
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.32") {
+        exclude(group = "com.pierfrancescosoffritti.androidyoutubeplayer", module = "core")
+    }
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
 
     //implementation("com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.23")
     implementation("androidx.mediarouter:mediarouter:1.8.1")

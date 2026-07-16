@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import com.youtube.musica.PlayerFullscreenActivity;
 import com.youtube.musica.R;
 import com.youtube.musica.adapter.CtgAdapterHorizontal;
-import com.youtube.musica.adapter.VideoAdapterAdapter;
+import com.youtube.musica.adapter.VideoAdapter;
 import com.youtube.musica.databinding.FragmentMusicBinding;
 import com.youtube.musica.dialog.progress;
 import com.youtube.musica.firebase.Category;
@@ -46,11 +46,18 @@ import com.youtube.musica.interfaces.DbMusicListener;
 import com.youtube.musica.interfaces.MusicListener;
 import com.youtube.musica.models.CategoryCollection;
 import com.youtube.musica.models.MusicCollection;
+import com.youtube.musica.services.NotificationHelper;
 import com.youtube.musica.ui.ctg.CtgViewModel;
 import com.youtube.musica.utils.Constants;
-import com.youtube.musica.services.PlayerEventBroadcaster;
+
 import android.widget.LinearLayout;
 
+/**
+ * MusicFragment
+ *
+ * Fragmento principal para mostrar la lista de música y las categorías disponibles.
+ * Administra el estado de reproducción de la lista, permite seleccionar categorías
+ */
 public class MusicFragment extends Fragment implements MusicListener, DbMusicListener {
     private ArrayList<MusicCollection> list;
     private RecyclerView recycler_view;
@@ -62,7 +69,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
     private ObjectAnimator loadingAnimator = null;
 
     private FragmentMusicBinding binding;
-    public VideoAdapterAdapter recyclerViewAdapter;
+    public VideoAdapter recyclerViewAdapter;
     MusicViewModel musicViewModel;
     CtgViewModel ctgViewModel;
     private Music db;
@@ -91,6 +98,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         db = new Music(getContext(), this);
         ctgDb = new Category();
         LoadCtg();
+        // Observa la carga de categorías desde la base de datos
         ctgViewModel.getList().observe(getViewLifecycleOwner(), new Observer<ArrayList<CategoryCollection>>() {
             @Override
             public void onChanged(ArrayList<CategoryCollection> categoryCollections) {
@@ -130,6 +138,10 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         return root;
     }
 
+    /**
+     * Actualiza el ícono del FloatingActionButton en función del estado de reproducción local.
+     * Muestra un efecto de pulsación/carga si está almacenando en búfer o sin arrancar.
+     */
     private void updateFabIcon() {
         if (loadingAnimator != null) {
             loadingAnimator.cancel();
@@ -164,6 +176,9 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         }
     }
 
+    /**
+     * Inicia la carga de categorías desde Firebase.
+     */
     public void LoadCtg(){
         ArrayList<CategoryCollection> listCtg = new ArrayList<>();
         progress.run(getString(R.string.load), getContext());
@@ -183,6 +198,9 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         });
     }
     int positionActive = 0;
+    /**
+     * Muestra el adaptador horizontal para las categorías.
+     */
     private void showCategory() {
         ArrayList<CategoryCollection> listCat = ctgViewModel.getList().getValue();
         assert listCat != null;
@@ -208,6 +226,8 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         musicViewModel.setList(playList);
         list = playList;
         showData();
+        
+        // Si estamos casteando y cambiamos de categoría, iniciar automáticamente el primer video
     }
 
     @Override
@@ -215,9 +235,13 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * Configura y muestra el RecyclerView con la lista de videos musicales,
+     * utilizando VideoAdapterAdapter para los reproductores en línea de YouTube.
+     */
     private void showData(){
         progressBar.setVisibility(View.GONE);
-        recyclerViewAdapter = new VideoAdapterAdapter(list, this.getLifecycle(), MusicFragment.this);
+        recyclerViewAdapter = new VideoAdapter(list, this.getLifecycle(), MusicFragment.this);
         recycler_view.setAdapter(recyclerViewAdapter);
         recycler_view.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerViewAdapter.notifyDataSetChanged();
@@ -242,6 +266,16 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
     public void onSetPosition(int position) {
         this.position = position;
     }
+    @Override
+    public void onVideoClicked(int position) {
+        this.position = position;
+        this.minuto = 0;
+        
+        if (recyclerViewAdapter != null) {
+            recyclerViewAdapter.playItem(position);
+        }
+    }
+
     @Override
     public void onNewRegister(String data) {
 

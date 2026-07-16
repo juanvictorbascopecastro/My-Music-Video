@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MyMusic"
 include(":app")
+include(":youtube-player-core")

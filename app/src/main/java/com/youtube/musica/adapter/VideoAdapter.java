@@ -21,7 +21,7 @@ import com.youtube.musica.R;
 import com.youtube.musica.interfaces.MusicListener;
 import com.youtube.musica.models.MusicCollection;
 
-public class VideoAdapterAdapter extends RecyclerView.Adapter<VideoAdapterAdapter.YouTubePlayerViewHolder> {
+public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.YouTubePlayerViewHolder> {
 
     private final ArrayList<MusicCollection> videoIds;
     private final Lifecycle lifecycle;
@@ -61,7 +61,13 @@ public class VideoAdapterAdapter extends RecyclerView.Adapter<VideoAdapterAdapte
         }
     }
 
-    public VideoAdapterAdapter(ArrayList<MusicCollection> videoIds, Lifecycle lifecycle, MusicListener listener) {
+    public void pausePlayer() {
+        if (activePlayer != null && isCurrentlyPlaying) {
+            activePlayer.pause();
+        }
+    }
+
+    public VideoAdapter(ArrayList<MusicCollection> videoIds, Lifecycle lifecycle, MusicListener listener) {
         this.videoIds = videoIds;
         this.lifecycle = lifecycle;
         this.listener = listener;
@@ -126,8 +132,9 @@ public class VideoAdapterAdapter extends RecyclerView.Adapter<VideoAdapterAdapte
             overlayView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (youTubePlayer != null) {
-                        youTubePlayer.play();
+                    int pos = getAdapterPosition();
+                    if (pos != RecyclerView.NO_POSITION) {
+                        listener.onVideoClicked(pos);
                     }
                 }
             });

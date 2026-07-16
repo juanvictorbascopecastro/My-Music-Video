@@ -19,9 +19,6 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.mediarouter.media.MediaControlIntent;
-import androidx.mediarouter.media.MediaRouteSelector;
-import androidx.mediarouter.media.MediaRouter;
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer;
@@ -40,7 +37,19 @@ import com.youtube.musica.models.CategoryCollection;
 import com.youtube.musica.models.MusicCollection;
 import com.youtube.musica.services.NotificationHelper;
 import com.youtube.musica.services.PlayerEventBroadcaster;
+import com.youtube.musica.utils.ChromecastUtil;
+import com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.ChromecastYouTubePlayer;
+import com.google.android.gms.cast.framework.CastButtonFactory;
+import androidx.mediarouter.app.MediaRouteButton;
 
+/**
+ * PlayerFullscreenActivity
+ * 
+ * Actividad encargada de reproducir videos de YouTube en pantalla completa (o modo apaisado).
+ * Además, maneja la reproducción en segundo plano a través de un servicio de notificaciones,
+ * transiciones al modo Picture-in-Picture (PiP), y la reproducción continua de una lista de reproducción.
+ * Ya no gestiona la lógica de Chromecast, la cual fue movida a MusicFragment.
+ */
 public class PlayerFullscreenActivity extends AppCompatActivity implements DbMusicListener, PlayerListener {
     private ActivityPlayerFullscreenBinding binding;
     private YouTubePlayerView youTubePlayerView;
@@ -53,14 +62,14 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     private Music musicDataBase;
     private boolean isFullScreem = false;
 
-    ///////////
-    private MediaRouter mRouter;
-    private MediaRouter.Callback mCallback;
-    private MediaRouteSelector mSelector;
-    ////////////
     private NotificationHelper notificationHelper;
     private PlayerEventBroadcaster eventBroadcaster;
     private boolean isPlaying = false;
+    
+    private ChromecastUtil chromecastUtil;
+    private MediaRouteButton mediaRouteButton;
+    private androidx.cardview.widget.CardView castButtonContainer;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,12 +82,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
 
         musicDataBase = new Music(PlayerFullscreenActivity.this, this);
 
-        mRouter = MediaRouter.getInstance(this);
-        mSelector = new MediaRouteSelector.Builder()
-                .addControlCategory(MediaControlIntent.CATEGORY_LIVE_AUDIO)
-                .addControlCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
-                .build();
-        mCallback = new MyCallback();
+
 
         notificationHelper = new NotificationHelper(this);
 
@@ -126,6 +130,37 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             SelectCtg();
         });
         youTubePlayerView.enableBackgroundPlayback(true);
+        
+        mediaRouteButton = findViewById(R.id.media_route_button);
+        castButtonContainer = findViewById(R.id.cast_button_container);
+        CastButtonFactory.setUpMediaRouteButton(this, mediaRouteButton);
+        
+        chromecastUtil = new ChromecastUtil(this, new ChromecastUtil.ChromecastListener() {
+            @Override
+            public void onConnected(ChromecastYouTubePlayer player) {
+                castButtonContainer.setCardBackgroundColor(getResources().getColor(R.color.primary));
+                if (ytPlayer != null) {
+                    ytPlayer.pause();
+                }
+                if (list != null && !list.isEmpty()) {
+                    chromecastUtil.loadVideo(currentYouTube.getIdvideo(), minutesPlayer);
+                }
+            }
+
+            @Override
+            public void onDisconnected() {
+                castButtonContainer.setCardBackgroundColor(getResources().getColor(R.color.white));
+            }
+
+            @Override
+            public void onStateChanged(PlayerConstants.PlayerState state) {
+                if (state == PlayerConstants.PlayerState.ENDED) {
+                    if (ytPlayer != null) {
+                        NextVideo(ytPlayer);
+                    }
+                }
+            }
+        });
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -174,6 +209,10 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         }
     }
 
+    /**
+     * Inicializa el reproductor de YouTube, el broadcast de eventos en segundo plano
+     * y las notificaciones para controlar el reproductor fuera de la app.
+     */
     private void initYouTubePlayerView() {
         // iniciar picture para reproducir
         initPictureInPicture();
@@ -252,27 +291,44 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     }
 
     private YouTubePlayer ytPlayer;
+
+    /**
+     * Reproduce el siguiente video en la lista. Si llega al final, deshabilita el botón de siguiente.
+     */
     private void NextVideo (YouTubePlayer youTubePlayer) {
         this.ytPlayer = youTubePlayer;
         indexPlayer += 1;
         disabledButton();
         currentYouTube = list.get(indexPlayer);
-        YouTubePlayerUtils.loadOrCueVideo(
-                youTubePlayer, getLifecycle(),
-                currentYouTube.getIdvideo(), 0f
-        );
+        
+        if (chromecastUtil != null && chromecastUtil.isCasting()) {
+            chromecastUtil.loadVideo(currentYouTube.getIdvideo(), 0f);
+        } else {
+            YouTubePlayerUtils.loadOrCueVideo(
+                    youTubePlayer, getLifecycle(),
+                    currentYouTube.getIdvideo(), 0f
+            );
+        }
         disabledButton();
     }
 
+    /**
+     * Reproduce el video anterior en la lista. Si llega al principio, deshabilita el botón de anterior.
+     */
     private void PreviousVideo (YouTubePlayer youTubePlayer) {
         this.ytPlayer = youTubePlayer;
         indexPlayer -= 1;
         disabledButton();
         currentYouTube = list.get(indexPlayer);
-        YouTubePlayerUtils.loadOrCueVideo(
-                youTubePlayer, getLifecycle(),
-                currentYouTube.getIdvideo(), 0f
-        );
+        
+        if (chromecastUtil != null && chromecastUtil.isCasting()) {
+            chromecastUtil.loadVideo(currentYouTube.getIdvideo(), 0f);
+        } else {
+            YouTubePlayerUtils.loadOrCueVideo(
+                    youTubePlayer, getLifecycle(),
+                    currentYouTube.getIdvideo(), 0f
+            );
+        }
         disabledButton();
     }
 
@@ -296,20 +352,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         ShowButton();
         super.onUserInteraction();
     }
-    public void onStart() {
-        super.onStart();
-        mRouter.addCallback(mSelector, mCallback,
-                MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
-
-        MediaRouter.RouteInfo route = mRouter.updateSelectedRoute(mSelector);
-    }
-
-    public void onStop() {
-        mRouter.addCallback(mSelector, mCallback, /* flags= */ 0);
-        super.onStop();
-    }
     public void onDestroy() {
-        mRouter.removeCallback(mCallback);
         super.onDestroy();
         if (youTubePlayerView != null) {
             youTubePlayerView.release();
@@ -323,9 +366,6 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     protected void onResume() {
         super.onResume();
         // if(ytPlayer != null) ytPlayer.play();
-    }
-    private final class MyCallback extends MediaRouter.Callback {
-        // Implement callback methods as needed.
     }
     private static class ButtonHideHandler extends Handler {
         private final java.lang.ref.WeakReference<PlayerFullscreenActivity> activityRef;
@@ -345,6 +385,9 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
                 activity.binding.btnSelect.setVisibility(View.GONE);
                 activity.binding.btnScreenRotation.setVisibility(View.GONE);
                 activity.binding.btnPicture.setVisibility(View.GONE);
+                if (activity.castButtonContainer != null) {
+                    activity.castButtonContainer.setVisibility(View.GONE);
+                }
             }
         }
     }
@@ -356,6 +399,9 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         disabledButton();
         binding.btnSelect.setVisibility(View.VISIBLE);
         binding.btnPicture.setVisibility(View.VISIBLE);
+        if (castButtonContainer != null) {
+            castButtonContainer.setVisibility(View.VISIBLE);
+        }
         
         handler.removeCallbacksAndMessages(null);
         handler.sendMessageDelayed(new Message(), 3000);
@@ -421,7 +467,14 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     }
 
 
-    // REPRODUCTOR EN SEGUNDO PLANO
+    // =========================================================================
+    // REPRODUCTOR EN SEGUNDO PLANO Y NOTIFICACIONES
+    // =========================================================================
+    
+    /**
+     * Crea y muestra la notificación persistente que permite al usuario
+     * controlar la reproducción (Pausa, Play, Siguiente, Anterior) cuando minimiza la app.
+     */
     private void showNotification() {
         PendingIntent contentIntent = PendingIntent.getActivity(
                 this,
@@ -470,8 +523,17 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
 
     @Override
     public void onPlayPauseNotification() {
-        if(ytPlayer != null) {
-            if(isPlaying) ytPlayer.pause();
+        if (chromecastUtil != null && chromecastUtil.isCasting()) {
+            if (isPlaying) {
+                chromecastUtil.pause();
+                isPlaying = false;
+            } else {
+                chromecastUtil.play();
+                isPlaying = true;
+            }
+            showNotification();
+        } else if (ytPlayer != null) {
+            if (isPlaying) ytPlayer.pause();
             else ytPlayer.play();
         }
     }
@@ -486,7 +548,14 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         if(ytPlayer != null) PreviousVideo(ytPlayer);
     }
 
-    // INIT PICTURE
+    // =========================================================================
+    // PICTURE IN PICTURE (PiP)
+    // =========================================================================
+    
+    /**
+     * Configura el comportamiento del modo PiP (Picture in Picture),
+     * habilitando la transición automática para dispositivos con Android 12+.
+     */
     private void initPictureInPicture() {
         binding.btnPicture.setOnClickListener(view -> {
             enterPipMode();
@@ -534,6 +603,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             binding.btnSelect.setVisibility(View.GONE);
             binding.btnScreenRotation.setVisibility(View.GONE);
             binding.btnPicture.setVisibility(View.GONE);
+            if (castButtonContainer != null) castButtonContainer.setVisibility(View.GONE);
             youTubePlayerView.matchParent();
         } else {
             // Restaurar botones y estado normal al volver a la app

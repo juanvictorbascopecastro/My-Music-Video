@@ -28,4 +28,10 @@
         android:name="com.youtube.musica.ui.ctg.CtgFragment"
         android:label="@string/categories"
         tools:layout="@layout/fragment_ctg" />
+
+    <fragment
+        android:id="@+id/nav_my_videos"
+        android:name="com.youtube.musica.ui.MyVideosFragment"
+        android:label="Mis Videos"
+        tools:layout="@layout/fragment_my_videos" />
 </navigation>

@@ -9,3 +9,36 @@ Es una aplicación que te permite reproducir videos de YouTube y guardar tus vid
 
 SHA64
 ./gradlew assembleDebug
+
+## ⚙️ Configuración Necesaria para Funcionar
+
+Para que este proyecto compile y funcione correctamente en un entorno local, necesitas configurar lo siguiente:
+
+### 1. Firebase (Google Sign-In)
+La aplicación utiliza Google Sign-In mediante Firebase Authentication. Necesitas proveer tus propias credenciales:
+- Debes crear un proyecto en Firebase y registrar la aplicación Android (`com.youtube.musica`).
+- Descarga el archivo **`google-services.json`** y colócalo en la carpeta `/app/`.
+- En tu archivo `/app/src/main/res/values/strings.xml`, debes agregar el Web Client ID generado por Firebase para que el login funcione:
+  ```xml
+  <string name="default_web_client_id">TU_WEB_CLIENT_ID.apps.googleusercontent.com</string>
+  ```
+- No olvides habilitar el método de inicio de sesión con Google en la consola de Firebase y añadir el SHA-1/SHA-256 de tu clave de firma (Debug/Release).
+
+### 2. YouTube Data API v3
+Para cargar listas de reproducción y buscar videos (como en el apartado "Mis Videos"), la app usa la **YouTube Data API v3**:
+- Debes ir a [Google Cloud Console](https://console.cloud.google.com/), habilitar la *YouTube Data API v3*.
+- Generar una Clave de API (API Key) y restringirla para que solo se use con esta API.
+- Abre tu archivo `local.properties` en la raíz del proyecto y agrega tu llave como una variable de entorno:
+  ```properties
+  YOUTUBE_API_KEY="TU_API_KEY_AQUI"
+  ```
+*(Nota: Para acceder a listas privadas `mine=true`, se requiere implementar autenticación OAuth2 y proveer un Access Token en la petición).*
+
+### 3. Reproductor Local y Workarounds (Bloqueo de Anuncios)
+El reproductor de YouTube no se extrae de internet, sino que es **un módulo local** (`:youtube-player-core`) incluido en este repositorio.
+Este módulo modificado contiene *Workarounds* en el archivo `ayp_youtube_player.html` mediante inyección de JavaScript puro para:
+- Bloquear y saltar anuncios automáticamente.
+- Ocultar títulos e interfaces intrusivas de la pantalla.
+- Compartir sesiones de visualización.
+
+Dado que es una modificación a nivel de WebView para uso personal, **no se recomienda** subir esta versión a Google Play Store para evitar infracciones a los Términos de Servicio de YouTube.

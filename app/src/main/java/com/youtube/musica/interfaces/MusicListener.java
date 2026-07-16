@@ -9,4 +9,5 @@ public interface MusicListener {
     void onSeletedCtg(CategoryCollection categoryCollection);
     void onSetPosition(int position);
     void onStateChanged(String state);
+    void onVideoClicked(int position);
 }
