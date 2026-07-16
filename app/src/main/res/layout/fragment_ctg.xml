@@ -79,7 +79,7 @@
         android:layout_marginBottom="8dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        app:backgroundTint="@color/app"
+        app:backgroundTint="@color/fondo"
         app:srcCompat="@drawable/ic_add"
         app:tint="@color/white"
         app:maxImageSize="28dp" />

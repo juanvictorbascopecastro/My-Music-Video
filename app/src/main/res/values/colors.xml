@@ -7,6 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="app">#2196F3</color>
-    <color name="app2">#00467E</color>
+
+    <!-- Nuevos colores basados en el logo -->
+    <color name="fondo">#0A0F1A</color>
+    <color name="primary">#FF617E</color>
+    <color name="background">#0A0F1A</color>
+    <color name="gradientStart">#FFB885</color>
+    <color name="gradientEnd">#FF617E</color>
+    <color name="playIcon">#FFFFFF</color>
 </resources>

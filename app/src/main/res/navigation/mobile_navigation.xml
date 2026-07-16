@@ -7,25 +7,25 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="app.list.mymusic.ui.home.HomeFragment"
+        android:name="com.youtube.musica.ui.home.HomeFragment"
         android:label="@string/inicio"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/nav_music"
-        android:name="app.list.mymusic.ui.music.MusicFragment"
+        android:name="com.youtube.musica.ui.music.MusicFragment"
         android:label="@string/my_music"
         tools:layout="@layout/fragment_music" />
 
     <fragment
         android:id="@+id/nav_youtube"
-        android:name="app.list.mymusic.ui.youtube.YouTubeFragment"
+        android:name="com.youtube.musica.ui.youtube.YouTubeFragment"
         android:label="@string/youtube"
         tools:layout="@layout/fragment_youtube" />
 
     <fragment
         android:id="@+id/nav_ctg"
-        android:name="app.list.mymusic.ui.ctg.CtgFragment"
+        android:name="com.youtube.musica.ui.ctg.CtgFragment"
         android:label="@string/categories"
         tools:layout="@layout/fragment_ctg" />
 </navigation>

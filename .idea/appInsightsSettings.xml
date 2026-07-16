@@ -22,13 +22,27 @@
             </InsightsFilterSettings>
           </value>
         </entry>
+        <entry key="Android vitals">
+          <value>
+            <InsightsFilterSettings>
+              <option name="connection">
+                <ConnectionSetting>
+                  <option name="appId" value="air.com.vudu.air.DownloaderTab" />
+                </ConnectionSetting>
+              </option>
+              <option name="signal" value="SIGNAL_UNSPECIFIED" />
+              <option name="timeIntervalDays" value="SEVEN_DAYS" />
+              <option name="visibilityType" value="ALL" />
+            </InsightsFilterSettings>
+          </value>
+        </entry>
         <entry key="Firebase Crashlytics">
           <value>
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="app.list.mymusic" />
-                  <option name="mobileSdkAppId" value="1:618131494263:android:c65e6e1b926d7622a03d72" />
+                  <option name="appId" value="com.youtube.musica" />
+                  <option name="mobileSdkAppId" value="1:618131494263:android:1fab7e26a5b715b9a03d72" />
                   <option name="projectId" value="my-music-ea31d" />
                   <option name="projectNumber" value="618131494263" />
                 </ConnectionSetting>

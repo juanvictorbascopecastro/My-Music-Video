@@ -57,17 +57,39 @@
         android:layout_centerVertical="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+    <LinearLayout
+        android:id="@+id/fab_container"
         android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        app:backgroundTint="@color/app"
-        android:elevation="5dp"
         android:layout_marginBottom="25dp"
         android:layout_marginRight="25dp"
-        app:srcCompat="@drawable/ic_play" />
+        android:gravity="center_horizontal">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_open_player"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:backgroundTint="@color/white"
+            app:tint="@color/primary"
+            android:layout_marginBottom="16dp"
+            android:elevation="5dp"
+            app:fabSize="mini"
+            app:srcCompat="@drawable/ic_music" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:backgroundTint="@color/primary"
+            app:tint="@null"
+            app:maxImageSize="36dp"
+            android:scaleType="centerCrop"
+            android:elevation="5dp"
+            app:srcCompat="@drawable/ic_play" />
+    </LinearLayout>
 
 </RelativeLayout>
