@@ -2,10 +2,14 @@
 
 Es una aplicación que te permite reproducir videos de YouTube y guardar tus videos preferidos en una base de datos, organizados por categoría. Además, cuenta con un reproductor propio que te permite reproducir los videos en segundo plano. ¿Cansado de pausar la reproducción al cambiar de aplicación? ¡Con nuestro reproductor propio, puedes reproducir tus videos favoritos en segundo plano mientras accedes a otras aplicaciones!
 
-<img src="https://github.com/juanvictorbascopecastro/My-Music-Video/assets/43118668/22ca399c-f556-4214-bafa-a3fc65a84a09" width="290">
-<img src="https://github.com/juanvictorbascopecastro/My-Music-Video/assets/43118668/a7d722c5-ec1c-4411-b7a4-19b05aa121d8" width="290">
-<img src="https://github.com/juanvictorbascopecastro/My-Music-Video/assets/43118668/04d85da4-e741-42ca-8ea5-9d028d0a363e" width="290">
-<img src="https://github.com/juanvictorbascopecastro/My-Music-Video/assets/43118668/b168e3d4-6aa2-4f91-87e7-bd6d6813146d" width="290">
+<img width="720" height="1600" alt="WhatsApp Image 2026-07-17 at 11 27 15 AM" src="https://github.com/user-attachments/assets/380c84d7-1c43-474f-8bc4-78f498da16c5" />
+<img width="720" height="1600" alt="WhatsApp Image 2026-07-17 at 11 27 16 AM-2" src="https://github.com/user-attachments/assets/d7a88717-82aa-4284-a343-bd00757e81b6" />
+<img width="1600" height="720" alt="WhatsApp Image 2026-07-17 at 11 27 16 AM" src="https://github.com/user-attachments/assets/25831dec-f6f1-4341-ac53-7a70eb72eec9" />
+<img width="1200" height="2400" alt="WhatsApp Image 2026-07-18 at 1 56 01 AM-2-3" src="https://github.com/user-attachments/assets/f8404e7a-1969-45fb-8a56-74cec39a631f" />
+<img width="1200" height="2400" alt="WhatsApp Image 2026-07-18 at 1 56 01 AM-3-2" src="https://github.com/user-attachments/assets/b035d15a-f839-42b8-ac44-b2f9e2ad8e84" />
+<img width="1200" height="2400" alt="WhatsApp Image 2026-07-18 at 1 56 01 AM-4" src="https://github.com/user-attachments/assets/36a1b065-48f9-4baf-b390-f9e4a5818cbd" />
+
+
 
 SHA64
 ./gradlew assembleDebug
