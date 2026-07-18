@@ -16,35 +16,19 @@
 
         <TextView
             android:id="@+id/txtName"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:drawableLeft="@drawable/ic_folder"
             android:drawablePadding="10dp"
-            android:gravity="center"
-            android:text="Mis Faforitos"
+            android:gravity="left|center_vertical"
+            android:text="Mis Favoritos"
             android:textAllCaps="true"
             android:textColor="@android:color/black"
-            android:textSize="17dp"
-            android:textStyle="bold" />
-
-        <ImageButton
-            android:id="@+id/btnEdit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
-            android:layout_toLeftOf="@+id/btnDelete"
-            android:background="@drawable/btn_primary"
-            android:padding="5dp"
-            android:src="@drawable/ic_pencil" />
-
-        <ImageButton
-            android:id="@+id/btnDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/btn_danger"
-            android:padding="5dp"
-            android:src="@drawable/ic_delete" />
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:minLines="2"
+            android:ellipsize="end" />
     </RelativeLayout>
 </androidx.cardview.widget.CardView>

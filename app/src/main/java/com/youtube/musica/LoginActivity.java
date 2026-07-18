@@ -39,21 +39,24 @@ public class LoginActivity extends AppCompatActivity {
     private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                    try {
-                        GoogleSignInAccount account = task.getResult(ApiException.class);
-                        firebaseAuthWithGoogle(account.getIdToken());
-                    } catch (ApiException e) {
-                        System.out.println("Google sign in failed: " + e.getStatusCode() + " - " + e.getMessage());
-                        progressBar.setVisibility(View.GONE);
-                        btnGoogleSignIn.setEnabled(true);
-                        Toast.makeText(this, "Google sign in failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    System.out.println("Google sign in canceled or failed with result code: " + result.getResultCode());
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                try {
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    android.util.Log.d("LoginActivity", "Inicio de sesión de Google exitoso: " + account.getEmail());
+                    firebaseAuthWithGoogle(account.getIdToken());
+                } catch (ApiException e) {
+                    android.util.Log.e("LoginActivity", "Fallo al iniciar sesión con Google. ResultCode de Activity: " + result.getResultCode() + ", Código de API Exception: " + e.getStatusCode(), e);
                     progressBar.setVisibility(View.GONE);
                     btnGoogleSignIn.setEnabled(true);
+                    
+                    String errorMsg = "Error Google Sign-In: Código " + e.getStatusCode();
+                    if (e.getStatusCode() == 10) {
+                        errorMsg += " (DEVELOPER_ERROR: Revisa que el SHA-1 en Firebase sea correcto y corresponda a la firma actual de la app)";
+                    } else if (e.getStatusCode() == 12500) {
+                        errorMsg += " (SIGN_IN_FAILED: Verifica que el email de soporte esté configurado en Firebase/Google Cloud)";
+                    }
+                    
+                    Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -82,7 +85,6 @@ public class LoginActivity extends AppCompatActivity {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(webClientId)
                     .requestEmail()
-                    .requestScopes(new Scope("https://www.googleapis.com/auth/youtube.readonly"))
                     .build();
             mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         }

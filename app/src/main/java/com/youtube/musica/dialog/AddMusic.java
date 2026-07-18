@@ -40,6 +40,7 @@ public class AddMusic extends AlertDialog implements DbMusicListener {
         private EditText editURL, editName, editDetails, editCode;
         private ArrayList<CategoryCollection> list_ctg;
         private String url, id_video;
+        private String prefilledTitle = "";
         private ArrayAdapter<String> adapter;
         private String[] categorias;
         private Spinner spinner;
@@ -53,6 +54,16 @@ public class AddMusic extends AlertDialog implements DbMusicListener {
             this.list_ctg = list;
             this.id_video = id_video;
             this.context = context;
+            Iniciar();
+        }
+        
+        public AddMusic(Context context, ArrayList<CategoryCollection> list, String url, String id_video, String title) {
+            super(context);
+            this.url = url;
+            this.list_ctg = list;
+            this.id_video = id_video;
+            this.context = context;
+            this.prefilledTitle = title;
             Iniciar();
         }
         private MusicCollection youTube;
@@ -79,6 +90,9 @@ public class AddMusic extends AlertDialog implements DbMusicListener {
 
             editURL.setText(url);
             editCode.setText(id_video);
+            if (prefilledTitle != null && !prefilledTitle.isEmpty()) {
+                editName.setText(prefilledTitle);
+            }
             db = new Music(getContext(), AddMusic.this);
             msg = new msgInfo(getContext());
 

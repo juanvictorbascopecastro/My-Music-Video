@@ -43,7 +43,7 @@ public class CtgFragment extends Fragment implements CtgListener {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        ctgViewModel = new ViewModelProvider(this).get(CtgViewModel.class);
+        ctgViewModel = new ViewModelProvider(requireActivity()).get(CtgViewModel.class);
 
         binding = FragmentCtgBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -53,13 +53,19 @@ public class CtgFragment extends Fragment implements CtgListener {
         text_registros = binding.txtRegistros;
         progressBar = binding.progressBar;
         db = new Category();
-        LoadData();
+        
         ctgViewModel.getList().observe(getViewLifecycleOwner(), new Observer<ArrayList<CategoryCollection>>() {
             @Override
             public void onChanged(ArrayList<CategoryCollection> categoryCollections) {
-                showList();
+                if (categoryCollections != null) {
+                    list = categoryCollections;
+                    showList();
+                }
             }
         });
+        if (ctgViewModel.getList().getValue() == null || ctgViewModel.getList().getValue().isEmpty()) {
+            LoadData();
+        }
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,8 +104,90 @@ public class CtgFragment extends Fragment implements CtgListener {
             txt_no_register.setVisibility(View.GONE);
             ctgAdapter = new CtgAdapter(getContext(), list, this, ctgViewModel);
             listView.setAdapter(ctgAdapter);
+
+            listView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                    CategoryCollection ctg = list.get(position);
+                    showBottomSheet(ctg);
+                }
+            });
+
+            listView.setOnItemLongClickListener(new android.widget.AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                    CategoryCollection ctg = list.get(position);
+                    checkAndDelete(ctg);
+                    return true;
+                }
+            });
         }
         text_registros.setText(getString(R.string.text_registros, list.size()));
+    }
+
+    private void showBottomSheet(final CategoryCollection ctg) {
+        final com.google.android.material.bottomsheet.BottomSheetDialog bottomSheetDialog = new com.google.android.material.bottomsheet.BottomSheetDialog(getContext());
+        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_ctg_actions, null);
+        bottomSheetDialog.setContentView(view);
+
+        view.findViewById(R.id.btnEdit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+                new AddCtg(getContext(), ctg, CtgFragment.this, ctgViewModel);
+            }
+        });
+
+        view.findViewById(R.id.btnDelete).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+                checkAndDelete(ctg);
+            }
+        });
+
+        bottomSheetDialog.show();
+    }
+
+    private void checkAndDelete(final CategoryCollection categoryCollection) {
+        progress.run("Verificando...", getContext());
+        com.youtube.musica.firebase.Music musicDb = new com.youtube.musica.firebase.Music(getContext(), null);
+        musicDb.loadMusic(categoryCollection.getCode()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                progress.diss();
+                if (task.isSuccessful()) {
+                    if (!task.getResult().isEmpty()) {
+                        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
+                        builder.setTitle("Acción denegada")
+                               .setMessage("No se puede eliminar esta categoría porque tiene música asignada.")
+                               .setPositiveButton("Aceptar", null)
+                               .show();
+                    } else {
+                        msjConfirDelete(categoryCollection);
+                    }
+                } else {
+                    Toast.makeText(getContext(), "Error al verificar la categoría", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void msjConfirDelete(final CategoryCollection categoryCollection){
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
+        builder.setMessage(android.text.Html.fromHtml("<font color='#be0d13'>"+getString(R.string.are_you_sure_you_want_delete, categoryCollection.getName())+"</font>"))
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.accept), new android.content.DialogInterface.OnClickListener() {
+                    public void onClick(final android.content.DialogInterface dialog, int id) {
+                        onDeteRegister(categoryCollection.getCode());
+                    }
+                }).setNegativeButton(getString(R.string.cancel), new android.content.DialogInterface.OnClickListener() {
+                    public void onClick(android.content.DialogInterface dialogo, int id) {
+                        dialogo.cancel();
+                    }
+                });
+        android.app.AlertDialog alert = builder.create();
+        alert.show();
     }
     public void setList(ArrayList<CategoryCollection> list) {
         this.list = list;

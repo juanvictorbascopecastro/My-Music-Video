@@ -22,7 +22,12 @@ public class PlayerEventBroadcaster {
         intentFilter.addAction(PlayerEventBroadcaster.ACTION_PLAY_PAUSE);
         intentFilter.addAction(PlayerEventBroadcaster.ACTION_NEXT);
         intentFilter.addAction(PlayerEventBroadcaster.ACTION_PREVIOUS);
-        context.registerReceiver(playbackReceiver, intentFilter);
+        androidx.core.content.ContextCompat.registerReceiver(
+                context,
+                playbackReceiver,
+                intentFilter,
+                androidx.core.content.ContextCompat.RECEIVER_EXPORTED
+        );
 
     }
     public BroadcastReceiver playbackReceiver = new BroadcastReceiver() {

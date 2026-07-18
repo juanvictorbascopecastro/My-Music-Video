@@ -15,4 +15,5 @@
     <color name="gradientStart">#FFB885</color>
     <color name="gradientEnd">#FF617E</color>
     <color name="playIcon">#FFFFFF</color>
+    <color name="celeste">#03A9F4</color>
 </resources>

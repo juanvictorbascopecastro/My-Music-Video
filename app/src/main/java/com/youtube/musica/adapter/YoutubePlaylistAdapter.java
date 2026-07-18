@@ -20,13 +20,19 @@ public class YoutubePlaylistAdapter extends RecyclerView.Adapter<YoutubePlaylist
 
     private List<YoutubePlaylist> items = new ArrayList<>();
     private final OnItemClickListener listener;
+    private final OnItemLongClickListener longListener;
 
     public interface OnItemClickListener {
         void onItemClick(YoutubePlaylist item);
     }
 
-    public YoutubePlaylistAdapter(OnItemClickListener listener) {
+    public interface OnItemLongClickListener {
+        void onItemLongClick(YoutubePlaylist item);
+    }
+
+    public YoutubePlaylistAdapter(OnItemClickListener listener, OnItemLongClickListener longListener) {
         this.listener = listener;
+        this.longListener = longListener;
     }
 
     public void setItems(List<YoutubePlaylist> items) {
@@ -48,7 +54,7 @@ public class YoutubePlaylistAdapter extends RecyclerView.Adapter<YoutubePlaylist
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         YoutubePlaylist item = items.get(position);
-        holder.bind(item, listener);
+        holder.bind(item, listener, longListener);
     }
 
     @Override
@@ -68,7 +74,7 @@ public class YoutubePlaylistAdapter extends RecyclerView.Adapter<YoutubePlaylist
             tvDescription = itemView.findViewById(R.id.tv_description);
         }
 
-        public void bind(YoutubePlaylist item, OnItemClickListener listener) {
+        public void bind(YoutubePlaylist item, OnItemClickListener listener, OnItemLongClickListener longListener) {
             tvTitle.setText(item.getTitle());
             tvDescription.setText(item.getDescription());
 
@@ -77,6 +83,10 @@ public class YoutubePlaylistAdapter extends RecyclerView.Adapter<YoutubePlaylist
                     .into(ivThumbnail);
 
             itemView.setOnClickListener(v -> listener.onItemClick(item));
+            itemView.setOnLongClickListener(v -> {
+                longListener.onItemLongClick(item);
+                return true;
+            });
         }
     }
 }

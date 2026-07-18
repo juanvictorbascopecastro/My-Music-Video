@@ -132,7 +132,7 @@ public class YouTubeFragment extends Fragment {
         db.loadCtg().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(!task.getResult().isEmpty()){
+                if(task.isSuccessful() && task.getResult() != null && !task.getResult().isEmpty()){
                     CategoryCollection ctg;
                     for(QueryDocumentSnapshot snapshot : task.getResult()) {
                         ctg = snapshot.toObject(CategoryCollection.class);
@@ -151,6 +151,4 @@ public class YouTubeFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-
-
 }

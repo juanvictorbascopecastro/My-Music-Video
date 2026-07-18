@@ -30,6 +30,8 @@ public class YouTubeBackgroundService extends Service {
     }
 
     public static android.app.Notification currentNotification = null;
+    private android.os.PowerManager.WakeLock wakeLock;
+    private android.net.wifi.WifiManager.WifiLock wifiLock;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -40,6 +42,25 @@ public class YouTubeBackgroundService extends Service {
                 startForeground(1, currentNotification);
             }
         }
+        
+        // Adquirir WakeLock para que no se duerma al apagar la pantalla
+        if (wakeLock == null) {
+            android.os.PowerManager powerManager = (android.os.PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
+            if (powerManager != null) {
+                wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "MyMusic::YouTubeBackgroundWakeLock");
+                wakeLock.acquire();
+            }
+        }
+        
+        // Adquirir WifiLock para evitar que Android desconecte el WiFi en modo Doze (ahorro de batería)
+        if (wifiLock == null) {
+            android.net.wifi.WifiManager wifiManager = (android.net.wifi.WifiManager) getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
+            if (wifiManager != null) {
+                wifiLock = wifiManager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "MyMusic::YouTubeWifiLock");
+                wifiLock.acquire();
+            }
+        }
+        
         return START_NOT_STICKY;
     }
 
@@ -54,6 +75,14 @@ public class YouTubeBackgroundService extends Service {
         if (youTubePlayer != null) {
             youTubePlayer.pause();
             youTubePlayer = null;
+        }
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+            wakeLock = null;
+        }
+        if (wifiLock != null && wifiLock.isHeld()) {
+            wifiLock.release();
+            wifiLock = null;
         }
     }
 }

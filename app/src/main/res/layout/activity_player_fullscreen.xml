@@ -28,6 +28,7 @@
 
     <ImageView
         android:id="@+id/btn_previous"
+        android:visibility="gone"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:padding="12dp"
@@ -39,6 +40,7 @@
 
     <ImageView
         android:id="@+id/btn_next"
+        android:visibility="gone"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:padding="12dp"
@@ -72,6 +74,7 @@
 
     <ImageView
         android:id="@+id/btnScreenRotation"
+        android:visibility="gone"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="12dp"
@@ -83,7 +86,20 @@
         app:layout_constraintBottom_toBottomOf="@+id/btnSelect" />
 
     <ImageView
+        android:id="@+id/btnPlaybackMode"
+        android:visibility="gone"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="12dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_repeat"
+        app:layout_constraintStart_toEndOf="@+id/btnScreenRotation"
+        app:layout_constraintTop_toTopOf="@+id/btnScreenRotation"
+        app:layout_constraintBottom_toBottomOf="@+id/btnScreenRotation" />
+
+    <ImageView
         android:id="@+id/btnPicture"
+        android:visibility="gone"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="12dp"
@@ -93,14 +109,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.cardview.widget.CardView
+    <FrameLayout
         android:id="@+id/cast_button_container"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:visibility="gone"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginEnd="8dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="5dp"
-        app:cardBackgroundColor="@color/white"
         app:layout_constraintEnd_toStartOf="@+id/btnPicture"
         app:layout_constraintTop_toTopOf="@+id/btnPicture"
         app:layout_constraintBottom_toBottomOf="@+id/btnPicture">
@@ -110,6 +124,6 @@
             android:layout_height="match_parent"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:mediaRouteTypes="user" />
-    </androidx.cardview.widget.CardView>
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

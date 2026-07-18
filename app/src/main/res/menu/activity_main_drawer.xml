@@ -23,8 +23,8 @@
             android:title="@string/categories" />
 
         <item
-            android:id="@+id/nav_my_videos"
+            android:id="@+id/nav_youtube_search"
             android:icon="@drawable/ic_youtube"
-            android:title="Mis Videos" />
+            android:title="Búsqueda YouTube" />
     </group>
 </menu>

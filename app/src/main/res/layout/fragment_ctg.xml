@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context=".ui.ctg.CtgFragment">
 
     <androidx.cardview.widget.CardView
@@ -14,6 +15,7 @@
         android:layout_marginTop="3dp"
         android:layout_marginRight="3dp"
         android:layout_marginBottom="4dp"
+        app:cardBackgroundColor="@color/background"
         app:cardElevation="2dp"
         app:cardCornerRadius="4dp">
         <RelativeLayout
@@ -79,7 +81,7 @@
         android:layout_marginBottom="8dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        app:backgroundTint="@color/fondo"
+        app:backgroundTint="@color/celeste"
         app:srcCompat="@drawable/ic_add"
         app:tint="@color/white"
         app:maxImageSize="28dp" />

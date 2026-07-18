@@ -30,8 +30,9 @@
         tools:layout="@layout/fragment_ctg" />
 
     <fragment
-        android:id="@+id/nav_my_videos"
-        android:name="com.youtube.musica.ui.MyVideosFragment"
-        android:label="Mis Videos"
-        tools:layout="@layout/fragment_my_videos" />
+        android:id="@+id/nav_youtube_search"
+        android:name="com.youtube.musica.ui.youtube.YoutubeSearchFragment"
+        android:label="Búsqueda YouTube"
+        tools:layout="@layout/fragment_youtube_search" />
+
 </navigation>
