@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+@SuppressWarnings("deprecation")
 public class LoginActivity extends AppCompatActivity {
 
     private GoogleSignInClient mGoogleSignInClient;
@@ -129,7 +130,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void goToMainActivity() {
-        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        if (isTaskRoot()) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        }
         finish();
     }
 }

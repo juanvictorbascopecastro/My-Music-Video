@@ -9,9 +9,11 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- Nuevos colores basados en el logo -->
-    <color name="fondo">#0A0F1A</color>
+    <color name="fondo">#FFFFFF</color>
     <color name="primary">#FF617E</color>
-    <color name="background">#0A0F1A</color>
+    <color name="background">#FFFFFF</color>
+    <color name="text_primary">#000000</color>
+    <color name="text_secondary">#666666</color>
     <color name="gradientStart">#FFB885</color>
     <color name="gradientEnd">#FF617E</color>
     <color name="playIcon">#FFFFFF</color>

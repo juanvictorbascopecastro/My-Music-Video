@@ -98,8 +98,12 @@ public class YoutubeSearchFragment extends Fragment {
             startActivity(intent);
         }, item -> {
             // Long click: open AddMusic dialog
-            String videoUrl = "https://www.youtube.com/watch?v=" + item.getVideoId();
-            new AddMusic(getContext(), ctgViewModel.getList().getValue(), videoUrl, item.getVideoId(), item.getTitle());
+            if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+                String videoUrl = "https://www.youtube.com/watch?v=" + item.getVideoId();
+                new AddMusic(getContext(), ctgViewModel.getList().getValue(), videoUrl, item.getVideoId(), item.getTitle());
+            } else {
+                com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+            }
         });
         rvYoutubeSearch.setAdapter(adapter);
 

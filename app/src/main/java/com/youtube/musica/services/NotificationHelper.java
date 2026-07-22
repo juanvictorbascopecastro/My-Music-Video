@@ -32,6 +32,7 @@ import java.util.ArrayList;
  * También configura la MediaSession, la cual permite controlar la reproducción desde
  * la pantalla de bloqueo, relojes inteligentes o auriculares Bluetooth.
  */
+@SuppressWarnings("deprecation")
 public class NotificationHelper {
     private static final int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "channel_id";
@@ -91,9 +92,10 @@ public class NotificationHelper {
      * @param list Lista actual de videos/canciones en reproducción.
      * @param indexPlayer Índice actual del video que se está reproduciendo en la lista.
      * @param isPlaying Estado actual de reproducción: true si está reproduciendo, false si está pausado.
+     * @param currentPlaybackMode Modo actual de reproducción (Secuencial, Aleatorio, Repetir 1).
      */
     @SuppressLint("MissingPermission")
-    public void showNotification(Class<?> targetActivityClass, ArrayList<MusicCollection> list, int indexPlayer, boolean isPlaying) {
+    public void showNotification(Class<?> targetActivityClass, ArrayList<MusicCollection> list, int indexPlayer, boolean isPlaying, int currentPlaybackMode) {
         if (list == null || list.isEmpty() || indexPlayer < 0 || indexPlayer >= list.size()) {
             return;
         }
@@ -127,6 +129,27 @@ public class NotificationHelper {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
+        PendingIntent modeIntent = PendingIntent.getBroadcast(
+                context,
+                0,
+                new Intent(PlayerEventBroadcaster.ACTION_PLAYBACK_MODE).setPackage(context.getPackageName()),
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        int modeIcon;
+        switch (currentPlaybackMode) {
+            case 1: // MODE_SHUFFLE
+                modeIcon = R.drawable.ic_shuffle;
+                break;
+            case 2: // MODE_REPEAT_ONE
+                modeIcon = R.drawable.ic_repeat_one;
+                break;
+            case 0: // MODE_SEQUENTIAL
+            default:
+                modeIcon = R.drawable.ic_repeat;
+                break;
+        }
+
         // Lógica para determinar si habilitar los botones anterior/siguiente según la posición en la lista
         boolean isNextActive, isPreviewActive;
         if(list.size() == 1){
@@ -154,7 +177,7 @@ public class NotificationHelper {
                 .into(new CustomTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        buildAndShowNotification(title, resource, contentIntent, previousIntent, playPauseIntent, nextIntent, isPlaying, isNextActive, isPreviewActive);
+                        buildAndShowNotification(title, resource, contentIntent, modeIntent, modeIcon, previousIntent, playPauseIntent, nextIntent, isPlaying, isNextActive, isPreviewActive);
                     }
 
                     @Override
@@ -164,7 +187,7 @@ public class NotificationHelper {
                     @Override
                     public void onLoadFailed(@Nullable Drawable errorDrawable) {
                         // Si falla la descarga, mostramos la notificación sin la imagen grande
-                        buildAndShowNotification(title, null, contentIntent, previousIntent, playPauseIntent, nextIntent, isPlaying, isNextActive, isPreviewActive);
+                        buildAndShowNotification(title, null, contentIntent, modeIntent, modeIcon, previousIntent, playPauseIntent, nextIntent, isPlaying, isNextActive, isPreviewActive);
                     }
                 });
     }
@@ -175,6 +198,7 @@ public class NotificationHelper {
      */
     @SuppressLint("MissingPermission")
     private void buildAndShowNotification(String title, Bitmap largeIcon, PendingIntent contentIntent,
+                                          PendingIntent modeIntent, int modeIcon,
                                           PendingIntent previousIntent, PendingIntent playPauseIntent,
                                           PendingIntent nextIntent, boolean isPlaying, boolean isNextActive,
                                           boolean isPreviewActive) {
@@ -194,7 +218,10 @@ public class NotificationHelper {
             builder.setLargeIcon(largeIcon);
         }
 
-        // Action Previous
+        // Action Playback Mode (Index 0)
+        builder.addAction(new NotificationCompat.Action(modeIcon, "Mode", modeIntent));
+
+        // Action Previous (Index 1)
         int prevIcon = isPreviewActive ? R.drawable.ic_previous : R.drawable.ic_previous_disabled;
         PendingIntent finalPrevIntent = isPreviewActive ? previousIntent : null;
         builder.addAction(new NotificationCompat.Action(prevIcon, "Previous", finalPrevIntent));
@@ -242,7 +269,7 @@ public class NotificationHelper {
 
         // Apply MediaStyle para que la notificación se vea como un reproductor nativo
         builder.setStyle(new MediaStyle()
-                .setShowActionsInCompactView(0, 1, 2) // Muestra los primeros 3 botones en la vista compacta
+                .setShowActionsInCompactView(1, 2, 3) // Muestra Previous, Play/Pause y Next en vista compacta
                 .setMediaSession(mediaSession.getSessionToken()));
 
         Notification notification = builder.build();

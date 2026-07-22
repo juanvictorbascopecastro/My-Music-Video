@@ -48,9 +48,12 @@ import androidx.mediarouter.app.MediaRouteButton;
 /**
  * PlayerFullscreenActivity
  * 
- * Actividad encargada de reproducir videos de YouTube en pantalla completa (o modo apaisado).
- * Además, maneja la reproducción en segundo plano a través de un servicio de notificaciones,
- * transiciones al modo Picture-in-Picture (PiP), y la reproducción continua de una lista de reproducción.
+ * Actividad encargada de reproducir videos de YouTube en pantalla completa (o
+ * modo apaisado).
+ * Además, maneja la reproducción en segundo plano a través de un servicio de
+ * notificaciones,
+ * transiciones al modo Picture-in-Picture (PiP), y la reproducción continua de
+ * una lista de reproducción.
  * Ya no gestiona la lógica de Chromecast, la cual fue movida a MusicFragment.
  */
 public class PlayerFullscreenActivity extends AppCompatActivity implements DbMusicListener, PlayerListener {
@@ -64,31 +67,34 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     private MusicCollection currentYouTube;
     private Music musicDataBase;
     private boolean isFullScreem = false;
-    
-    // Historial de reproducción para el Modo Aleatorio. Permite al usuario regresar a 
+
+    // Historial de reproducción para el Modo Aleatorio. Permite al usuario regresar
+    // a
     // canciones anteriores que fueron escogidas al azar al presionar "Previo".
     private Stack<Integer> shuffleHistory = new Stack<>();
 
     private NotificationHelper notificationHelper;
     private PlayerEventBroadcaster eventBroadcaster;
     private boolean isPlaying = false;
-    
+
     // =========================================================================
     // MODOS DE REPRODUCCIÓN (Playback Modes)
     // =========================================================================
     // MODE_SEQUENTIAL: Reproduce de forma lineal. Se detiene al final o inicio.
-    // MODE_SHUFFLE: Escoge videos al azar. Usa 'shuffleHistory' para recordar el historial.
-    // MODE_REPEAT_ONE: Repite el mismo video indefinidamente (no altera el indexPlayer).
+    // MODE_SHUFFLE: Escoge videos al azar. Usa 'shuffleHistory' para recordar el
+    // historial.
+    // MODE_REPEAT_ONE: Repite el mismo video indefinidamente (no altera el
+    // indexPlayer).
     private static final int MODE_SEQUENTIAL = 0;
     private static final int MODE_SHUFFLE = 1;
     private static final int MODE_REPEAT_ONE = 2;
     // Estado actual del modo de reproducción
     private int currentPlaybackMode = MODE_SEQUENTIAL;
-    
+
     private ChromecastUtil chromecastUtil;
     private MediaRouteButton mediaRouteButton;
     private android.widget.FrameLayout castButtonContainer;
-    
+
     private boolean isAppVisible = false;
     private long lastPipExitTime = 0;
     private boolean isUserIntentionallyPaused = false;
@@ -108,7 +114,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         binding = ActivityPlayerFullscreenBinding.inflate(getLayoutInflater());
@@ -118,8 +124,6 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
 
         musicDataBase = new Music(PlayerFullscreenActivity.this, this);
 
-
-
         notificationHelper = new NotificationHelper(this);
 
         // Recuperar el último modo de reproducción guardado (Persistencia).
@@ -128,7 +132,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         currentPlaybackMode = prefs.getInt("playback_mode", MODE_SEQUENTIAL);
 
         Bundle bundle = getIntent().getExtras();
-        if(bundle != null) {
+        if (bundle != null) {
             // currentYouTube = (YTVideo) bundle.getSerializable("music");
             minutesPlayer = bundle.getFloat("minuto");
             indexPlayer = bundle.getInt("position");
@@ -139,9 +143,9 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             binding.btnPrevious.setVisibility(View.GONE);
             binding.btnNext.setVisibility(View.GONE);
 
-
             if (list_ctg != null) {
-                if (!list_ctg.isEmpty()) binding.btnSelect.setVisibility(View.VISIBLE);
+                if (!list_ctg.isEmpty())
+                    binding.btnSelect.setVisibility(View.VISIBLE);
             }
             disabledButton();
             initYouTubePlayerView();
@@ -152,11 +156,11 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             public void onClick(View v) {
                 ShowButton();
                 isFullScreem = !isFullScreem;
-                if(!isFullScreem) {
+                if (!isFullScreem) {
                     // youTubePlayerView.exitFullScreen();
                     isFullScreem = false;
                     youTubePlayerView.matchParent();
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); //vertical
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); // vertical
                     binding.btnScreenRotation.setImageResource(R.drawable.ic_screen_rotation);
                 } else {
                     // youTubePlayerView.enterFullScreen();
@@ -171,30 +175,31 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         binding.btnSelect.setOnClickListener(view -> {
             SelectCtg();
         });
-        
-        // Listener para cambiar los Modos de Reproducción (Secuencial -> Aleatorio -> Repetir Uno)
+
+        // Listener para cambiar los Modos de Reproducción (Secuencial -> Aleatorio ->
+        // Repetir Uno)
         binding.btnPlaybackMode.setOnClickListener(v -> {
             ShowButton();
             // Alternar ciclicamente entre los 3 modos disponibles (0, 1, 2)
             currentPlaybackMode = (currentPlaybackMode + 1) % 3;
-            
+
             // Guardar el modo seleccionado en SharedPreferences para la próxima vez
             getSharedPreferences("MusicAppPrefs", Context.MODE_PRIVATE)
                     .edit()
                     .putInt("playback_mode", currentPlaybackMode)
                     .apply();
-            
+
             updatePlaybackModeIcon();
             disabledButton(); // Re-evaluar la visibilidad de los botones Next/Previous según el modo
         });
         updatePlaybackModeIcon(); // Setear el icono correcto al crear la actividad
-        
+
         youTubePlayerView.enableBackgroundPlayback(true);
-        
+
         mediaRouteButton = findViewById(R.id.media_route_button);
         castButtonContainer = findViewById(R.id.cast_button_container);
         CastButtonFactory.setUpMediaRouteButton(this, mediaRouteButton);
-        
+
         chromecastUtil = new ChromecastUtil(this, new ChromecastUtil.ChromecastListener() {
             @Override
             public void onConnected(ChromecastYouTubePlayer player) {
@@ -202,7 +207,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
                 shape.setShape(android.graphics.drawable.GradientDrawable.OVAL);
                 shape.setColor(getResources().getColor(R.color.primary));
                 castButtonContainer.setBackground(shape);
-                
+
                 if (ytPlayer != null) {
                     ytPlayer.pause();
                 }
@@ -247,7 +252,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         if (bundle != null) {
             minutesPlayer = bundle.getFloat("minuto");
             indexPlayer = bundle.getInt("position");
-            
+
             if (bundle.containsKey("list")) {
                 list = (ArrayList<MusicCollection>) bundle.getSerializable("list");
                 shuffleHistory.clear();
@@ -257,7 +262,8 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             }
 
             if (list_ctg != null) {
-                if (!list_ctg.isEmpty()) binding.btnSelect.setVisibility(View.VISIBLE);
+                if (!list_ctg.isEmpty())
+                    binding.btnSelect.setVisibility(View.VISIBLE);
             }
             disabledButton();
 
@@ -270,7 +276,8 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     }
 
     /**
-     * Inicializa el reproductor de YouTube, el broadcast de eventos en segundo plano
+     * Inicializa el reproductor de YouTube, el broadcast de eventos en segundo
+     * plano
      * y las notificaciones para controlar el reproductor fuera de la app.
      */
     private void initYouTubePlayerView() {
@@ -291,7 +298,8 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             }
 
             @Override
-            public void onStateChange(@NonNull YouTubePlayer youTubePlayer, @NonNull PlayerConstants.PlayerState state) {
+            public void onStateChange(@NonNull YouTubePlayer youTubePlayer,
+                    @NonNull PlayerConstants.PlayerState state) {
                 playerStateToString(youTubePlayer, state);
             }
 
@@ -299,6 +307,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             public void onError(@NonNull YouTubePlayer youTubePlayer, @NonNull PlayerConstants.PlayerError error) {
                 NextVideo(youTubePlayer);
             }
+
             @Override
             public void onCurrentSecond(YouTubePlayer youTubePlayer, float second) {
                 super.onCurrentSecond(youTubePlayer, second);
@@ -326,7 +335,8 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
                 updatePictureInPictureActions();
                 return "PLAYING";
             case PAUSED:
-                android.os.PowerManager pm = (android.os.PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
+                android.os.PowerManager pm = (android.os.PowerManager) getSystemService(
+                        android.content.Context.POWER_SERVICE);
                 if (pm != null && !pm.isInteractive()) {
                     if (!isUserIntentionallyPaused) {
                         boolean inPip = false;
@@ -376,30 +386,35 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     };
 
     /**
-     * Reproduce el siguiente video en la lista. Si llega al final, deshabilita el botón de siguiente.
+     * Reproduce el siguiente video en la lista. Si llega al final, deshabilita el
+     * botón de siguiente.
      * Modificado para soportar Modos de Reproducción.
      */
-    private void NextVideo (YouTubePlayer youTubePlayer) {
-        if (list == null || list.isEmpty()) return;
-        
+    private void NextVideo(YouTubePlayer youTubePlayer) {
+        if (list == null || list.isEmpty())
+            return;
+
         // Evaluar cuál será el siguiente índice en base al modo actual
         if (currentPlaybackMode == MODE_SEQUENTIAL) {
             // Comportamiento normal: sumar 1. Si estamos al final, no hacer nada.
-            if (indexPlayer >= list.size() - 1) return;
+            if (indexPlayer >= list.size() - 1)
+                return;
             indexPlayer += 1;
         } else if (currentPlaybackMode == MODE_SHUFFLE) {
             // Guardar el índice actual en el historial ANTES de cambiarlo a uno aleatorio.
-            // Esto permite que el botón "Anterior" funcione correctamente en modo aleatorio.
+            // Esto permite que el botón "Anterior" funcione correctamente en modo
+            // aleatorio.
             shuffleHistory.push(indexPlayer);
             indexPlayer = new java.util.Random().nextInt(list.size());
         } else if (currentPlaybackMode == MODE_REPEAT_ONE) {
-            // Mantener el mismo indexPlayer para que el video se repita desde el inicio (0f)
+            // Mantener el mismo indexPlayer para que el video se repita desde el inicio
+            // (0f)
         }
 
         this.ytPlayer = youTubePlayer;
         disabledButton();
         currentYouTube = list.get(indexPlayer);
-        
+
         if (chromecastUtil != null && chromecastUtil.isCasting()) {
             chromecastUtil.loadVideo(currentYouTube.getIdvideo(), 0f);
         } else {
@@ -409,16 +424,19 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     }
 
     /**
-     * Reproduce el video anterior en la lista. Si llega al principio, deshabilita el botón de anterior.
+     * Reproduce el video anterior en la lista. Si llega al principio, deshabilita
+     * el botón de anterior.
      * Modificado para soportar Modos de Reproducción y el Historial de Aleatorio.
      */
-    private void PreviousVideo (YouTubePlayer youTubePlayer) {
-        if (list == null || list.isEmpty()) return;
-        
+    private void PreviousVideo(YouTubePlayer youTubePlayer) {
+        if (list == null || list.isEmpty())
+            return;
+
         // Evaluar cuál será el índice anterior en base al modo actual
         if (currentPlaybackMode == MODE_SEQUENTIAL) {
             // Comportamiento normal: restar 1. Si estamos al inicio, no hacer nada.
-            if (indexPlayer <= 0) return;
+            if (indexPlayer <= 0)
+                return;
             indexPlayer -= 1;
         } else if (currentPlaybackMode == MODE_SHUFFLE) {
             // En modo aleatorio, primero verificamos si venimos de otra canción (historial)
@@ -436,7 +454,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         this.ytPlayer = youTubePlayer;
         disabledButton();
         currentYouTube = list.get(indexPlayer);
-        
+
         if (chromecastUtil != null && chromecastUtil.isCasting()) {
             chromecastUtil.loadVideo(currentYouTube.getIdvideo(), 0f);
         } else {
@@ -446,7 +464,8 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     }
 
     /**
-     * Actualiza el icono (drawable) del botón en la UI dependiendo del modo de reproducción actual
+     * Actualiza el icono (drawable) del botón en la UI dependiendo del modo de
+     * reproducción actual
      */
     private void updatePlaybackModeIcon() {
         switch (currentPlaybackMode) {
@@ -463,21 +482,27 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     }
 
     /**
-     * Oculta los botones Anterior/Siguiente si estamos en los extremos de la lista (Modo Secuencial).
+     * Oculta los botones Anterior/Siguiente si estamos en los extremos de la lista
+     * (Modo Secuencial).
      * En los modos Aleatorio y Repetir, los botones siempre deben estar visibles.
      */
-    private void disabledButton(){
-        if(list == null || list.isEmpty() || list.size() == 1){
+    private void disabledButton() {
+        if (isInPictureInPictureMode()) {
+            updatePictureInPictureActions();
+            return;
+        }
+
+        if (list == null || list.isEmpty() || list.size() == 1) {
             binding.btnNext.setVisibility(View.GONE);
             binding.btnPrevious.setVisibility(View.GONE);
         } else if (currentPlaybackMode == MODE_SEQUENTIAL) {
-            if(indexPlayer == list.size()-1){
+            if (indexPlayer == list.size() - 1) {
                 binding.btnNext.setVisibility(View.GONE);
                 binding.btnPrevious.setVisibility(View.VISIBLE);
-            }else if(indexPlayer == 0){
+            } else if (indexPlayer == 0) {
                 binding.btnPrevious.setVisibility(View.GONE);
                 binding.btnNext.setVisibility(View.VISIBLE);
-            }else{
+            } else {
                 binding.btnPrevious.setVisibility(View.VISIBLE);
                 binding.btnNext.setVisibility(View.VISIBLE);
             }
@@ -487,11 +512,13 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         }
         updatePictureInPictureActions();
     }
+
     @Override
     public void onUserInteraction() {
         ShowButton();
         super.onUserInteraction();
     }
+
     public void onDestroy() {
         super.onDestroy();
         bufferingHandler.removeCallbacks(bufferingRunnable);
@@ -503,11 +530,13 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             notificationHelper.cancelNotification();
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();
         // if(ytPlayer != null) ytPlayer.play();
     }
+
     private static class ButtonHideHandler extends Handler {
         private final java.lang.ref.WeakReference<PlayerFullscreenActivity> activityRef;
 
@@ -536,7 +565,11 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
 
     private Handler handler = new ButtonHideHandler(this);
 
-    private void ShowButton(){
+    private void ShowButton() {
+        if (isInPictureInPictureMode()) {
+            return;
+        }
+        
         binding.btnScreenRotation.setVisibility(View.VISIBLE);
         binding.btnPlaybackMode.setVisibility(View.VISIBLE);
         disabledButton();
@@ -545,7 +578,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         if (castButtonContainer != null) {
             castButtonContainer.setVisibility(View.VISIBLE);
         }
-        
+
         handler.removeCallbacksAndMessages(null);
         handler.sendMessageDelayed(new Message(), 3000);
     }
@@ -554,16 +587,17 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) { //horizontal
-            //ponemos pantalla completa
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) { // horizontal
+            // ponemos pantalla completa
             isFullScreem = true;
             youTubePlayerView.wrapContent();
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){ //vertical
-            //quitamos pantalla completa
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) { // vertical
+            // quitamos pantalla completa
             isFullScreem = false;
             youTubePlayerView.matchParent();
         }
     }
+
     // Lógica para ocultar la barra de navegación, osea los botones de acciones
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -572,58 +606,61 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             hideNavigationBar();
         }
     }
-    
+
+    //
     private void hideNavigationBar() {
-        View decorView = this.getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        androidx.core.view.WindowInsetsControllerCompat windowInsetsController =
+                androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        windowInsetsController.setSystemBarsBehavior(
+                androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         );
+        windowInsetsController.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());
     }
+
     @Override
     public void loadedMusicPlaylist(ArrayList<MusicCollection> playList) {
         indexPlayer = 0;
         minutesPlayer = 0;
         list = playList;
         shuffleHistory.clear();
-        if(!list.isEmpty()) {
+        if (!list.isEmpty()) {
             if (ytPlayer != null) {
                 ytPlayer.loadVideo(list.get(indexPlayer).getIdvideo(), 0f);
             }
         }
     }
+
     @Override
     public void errorLoadedMusicPlayList(String message, int icon) {
         Toast.makeText(PlayerFullscreenActivity.this, message, Toast.LENGTH_LONG).show();
     }
-    private void SelectCtg() {
-        CtgSelectionDialog.show(PlayerFullscreenActivity.this, list_ctg, new CtgSelectionDialog.OnCtgSelectedListener() {
-            @Override
-            public void onCtgSelected(String ctgCode) {
-                musicDataBase.LoadByCtg(ctgCode, true);
-            }
-        });
-    }
 
+    private void SelectCtg() {
+        CtgSelectionDialog.show(PlayerFullscreenActivity.this, list_ctg,
+                new CtgSelectionDialog.OnCtgSelectedListener() {
+                    @Override
+                    public void onCtgSelected(String ctgCode) {
+                        musicDataBase.LoadByCtg(ctgCode, true);
+                    }
+                });
+    }
 
     // =========================================================================
     // REPRODUCTOR EN SEGUNDO PLANO Y NOTIFICACIONES
     // =========================================================================
-    
+
     /**
      * Crea y muestra la notificación persistente que permite al usuario
-     * controlar la reproducción (Pausa, Play, Siguiente, Anterior) cuando minimiza la app.
+     * controlar la reproducción (Pausa, Play, Siguiente, Anterior) cuando minimiza
+     * la app.
      */
     private void showNotification() {
         notificationHelper.showNotification(
                 PlayerFullscreenActivity.class,
                 list,
                 indexPlayer,
-                isPlaying
+                isPlaying,
+                currentPlaybackMode
         );
     }
 
@@ -651,18 +688,36 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
 
     @Override
     public void onNextNotification() {
-        if(ytPlayer != null) NextVideo(ytPlayer);
+        if (ytPlayer != null)
+            NextVideo(ytPlayer);
     }
 
     @Override
     public void onPreviewNotification() {
-        if(ytPlayer != null) PreviousVideo(ytPlayer);
+        if (ytPlayer != null)
+            PreviousVideo(ytPlayer);
+    }
+
+    @Override
+    public void onPlaybackModeNotification() {
+        // Alternar ciclicamente entre los 3 modos disponibles (0, 1, 2)
+        currentPlaybackMode = (currentPlaybackMode + 1) % 3;
+
+        // Guardar el modo seleccionado en SharedPreferences para la próxima vez
+        getSharedPreferences("MusicAppPrefs", Context.MODE_PRIVATE)
+                .edit()
+                .putInt("playback_mode", currentPlaybackMode)
+                .apply();
+
+        updatePlaybackModeIcon();
+        disabledButton(); // Re-evaluar la visibilidad de los botones Next/Previous según el modo
+        showNotification(); // Actualizar la notificación con el nuevo ícono
     }
 
     // =========================================================================
     // PICTURE IN PICTURE (PiP)
     // =========================================================================
-    
+
     /**
      * Configura el comportamiento del modo PiP (Picture in Picture),
      * habilitando la transición automática para dispositivos con Android 12+.
@@ -679,6 +734,8 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         updatePictureInPictureActions();
     }
 
+    // Permite entrar al modo PiP (Picture in Picture) si el dispositivo lo soporta
+    // y la versión de Android es O o superior.
     private void enterPipMode() {
         boolean supportsPIP = getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
         if (supportsPIP && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -693,9 +750,17 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     @Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
+        
+        // Evitar la transición a PiP si la pantalla se está apagando (bloqueo de pantalla).
+        // Entrar a PiP mientras se bloquea la pantalla causa una pequeña pausa o tartamudeo en el audio.
+        android.os.PowerManager powerManager = (android.os.PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
+        if (powerManager != null && !powerManager.isInteractive()) {
+            return;
+        }
+
         // Transición a PiP al presionar el botón Home para Android 8 a 11
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            if (isPlaying) { 
+            if (isPlaying) {
                 enterPipMode();
             }
         }
@@ -715,7 +780,8 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             binding.btnScreenRotation.setVisibility(View.GONE);
             binding.btnPlaybackMode.setVisibility(View.GONE);
             binding.btnPicture.setVisibility(View.GONE);
-            if (castButtonContainer != null) castButtonContainer.setVisibility(View.GONE);
+            if (castButtonContainer != null)
+                castButtonContainer.setVisibility(View.GONE);
             youTubePlayerView.matchParent();
         } else {
             lastPipExitTime = System.currentTimeMillis();

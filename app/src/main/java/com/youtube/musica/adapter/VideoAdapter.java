@@ -33,17 +33,8 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.YouTubePlaye
     private int pendingPlayPosition = -1;
 
     public void playItem(int position) {
-        YouTubePlayer player = players.get(position);
-        if (player != null) {
-            // The view might be recycled and holding another player, but let's assume it's
-            // correct if we just smoothScrolled.
-            // Actually it's safer to just set pendingPlayPosition and let the adapter
-            // handle it via notifyItemChanged or scroll.
-            pendingPlayPosition = position;
-            notifyItemChanged(position); // This will trigger onBindViewHolder and call cueVideo/loadVideo
-        } else {
-            pendingPlayPosition = position;
-        }
+        pendingPlayPosition = position;
+        notifyItemChanged(position); // Fuerza el onBindViewHolder para reproducir el video
     }
 
     public void togglePlayPause() {
@@ -139,7 +130,15 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.YouTubePlaye
                 }
             });
 
-            youTubePlayerView.addYouTubePlayerListener(new AbstractYouTubePlayerListener() {
+            youTubePlayerView.setEnableAutomaticInitialization(false);
+            com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions options = new com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions.Builder(view.getContext())
+                    .controls(1)
+                    .rel(0)
+                    .ivLoadPolicy(3)
+                    .ccLoadPolicy(0)
+                    .build();
+
+            youTubePlayerView.initialize(new AbstractYouTubePlayerListener() {
                 @Override
                 public void onReady(
                         com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer youTubePlayer) {
@@ -250,7 +249,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.YouTubePlaye
                 public void onVideoLoadedFraction(@NotNull YouTubePlayer youTubePlayer, float loadedFraction) {
                     super.onVideoLoadedFraction(youTubePlayer, loadedFraction);
                 }
-            });
+            }, options);
         }
 
         public void cueVideo(MusicCollection videoId) {

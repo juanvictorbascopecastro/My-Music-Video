@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="Bienvenido a\nMy Music Video"
             android:textAlignment="center"
-            android:textColor="@color/black"
+            android:textColor="@color/text_primary"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_marginBottom="32dp"/>
@@ -43,7 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Inicia sesión para continuar"
-            android:textColor="#555555"
+            android:textColor="@color/text_secondary"
             android:textSize="14sp"
             android:layout_marginBottom="24dp"/>
 

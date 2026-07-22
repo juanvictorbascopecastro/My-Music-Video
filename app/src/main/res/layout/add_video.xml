@@ -22,7 +22,7 @@
             android:paddingRight="15dp"
             android:text="@string/new_music"
             android:textAllCaps="true"
-            android:textColor="@android:color/white"
+            android:textColor="@color/text_primary"
             android:textSize="16dp"
             android:textStyle="bold" />
         <Button
@@ -48,7 +48,7 @@
         android:hint="URL..."
         android:padding="16dp"
         android:imeOptions="actionNext"
-        android:textColorHint="#727272" />
+        android:textColorHint="@color/text_secondary" />
     <EditText
         android:id="@+id/editCode"
         android:layout_width="match_parent"
@@ -64,7 +64,7 @@
         android:hint="Codigo..."
         android:padding="6dp"
         android:imeOptions="actionNext"
-        android:textColorHint="#727272" />
+        android:textColorHint="@color/text_secondary" />
     <EditText
         android:id="@+id/editName"
         android:layout_width="match_parent"
@@ -79,7 +79,7 @@
         android:hint="@string/name_music"
         android:padding="6dp"
         android:imeOptions="actionNext"
-        android:textColorHint="#727272" />
+        android:textColorHint="@color/text_secondary" />
     <EditText
         android:id="@+id/editDetails"
         android:layout_width="match_parent"
@@ -93,7 +93,7 @@
         android:hint="@string/description"
         android:padding="6dp"
         android:imeOptions="actionPrevious"
-        android:textColorHint="#727272" />
+        android:textColorHint="@color/text_secondary" />
     <Spinner
         android:id="@+id/spinner"
         android:layout_marginTop="20dp"

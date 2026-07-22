@@ -14,6 +14,7 @@ public class PlayerEventBroadcaster {
     public static final String ACTION_PLAY_PAUSE = "ACTION_PLAY_PAUSE";
     public static final String ACTION_NEXT = "ACTION_NEXT";
     public static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
+    public static final String ACTION_PLAYBACK_MODE = "ACTION_PLAYBACK_MODE";
     PlayerListener listener;
 
     public PlayerEventBroadcaster(Context context, PlayerListener listener){
@@ -22,6 +23,7 @@ public class PlayerEventBroadcaster {
         intentFilter.addAction(PlayerEventBroadcaster.ACTION_PLAY_PAUSE);
         intentFilter.addAction(PlayerEventBroadcaster.ACTION_NEXT);
         intentFilter.addAction(PlayerEventBroadcaster.ACTION_PREVIOUS);
+        intentFilter.addAction(PlayerEventBroadcaster.ACTION_PLAYBACK_MODE);
         androidx.core.content.ContextCompat.registerReceiver(
                 context,
                 playbackReceiver,
@@ -45,6 +47,9 @@ public class PlayerEventBroadcaster {
                         break;
                     case ACTION_PREVIOUS:
                         listener.onPreviewNotification();
+                        break;
+                    case ACTION_PLAYBACK_MODE:
+                        listener.onPlaybackModeNotification();
                         break;
                 }
             }

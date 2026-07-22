@@ -69,7 +69,11 @@ public class CtgFragment extends Fragment implements CtgListener {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AddCtg(getContext(), null, CtgFragment.this, ctgViewModel);
+                if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+                    new AddCtg(getContext(), null, CtgFragment.this, ctgViewModel);
+                } else {
+                    com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+                }
             }
         });
 
@@ -117,7 +121,11 @@ public class CtgFragment extends Fragment implements CtgListener {
                 @Override
                 public boolean onItemLongClick(android.widget.AdapterView<?> parent, View view, int position, long id) {
                     CategoryCollection ctg = list.get(position);
-                    checkAndDelete(ctg);
+                    if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+                        checkAndDelete(ctg);
+                    } else {
+                        com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+                    }
                     return true;
                 }
             });
@@ -134,7 +142,11 @@ public class CtgFragment extends Fragment implements CtgListener {
             @Override
             public void onClick(View v) {
                 bottomSheetDialog.dismiss();
-                new AddCtg(getContext(), ctg, CtgFragment.this, ctgViewModel);
+                if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+                    new AddCtg(getContext(), ctg, CtgFragment.this, ctgViewModel);
+                } else {
+                    com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+                }
             }
         });
 
@@ -142,7 +154,11 @@ public class CtgFragment extends Fragment implements CtgListener {
             @Override
             public void onClick(View v) {
                 bottomSheetDialog.dismiss();
-                checkAndDelete(ctg);
+                if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+                    checkAndDelete(ctg);
+                } else {
+                    com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+                }
             }
         });
 

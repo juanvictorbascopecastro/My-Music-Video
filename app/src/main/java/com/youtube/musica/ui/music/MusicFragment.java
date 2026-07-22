@@ -23,6 +23,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 import com.bumptech.glide.Glide;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -77,6 +81,31 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
     private CategoryCollection categoryCollection;
     private RecyclerView recyclerViewCategory;
 
+    private final ActivityResultLauncher<Intent> playerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        float minutoExtra = data.getFloatExtra("minuto", 0f);
+                        int positionExtra = data.getIntExtra("position", 0);
+                        System.out.println("MINUTO: " + minutoExtra);
+                        System.out.println("POSICION: " + positionExtra);
+                        
+                        if (minutoExtra > 0) {
+                            currentState = "PLAYING";
+                        } else {
+                            currentState = "PAUSED";
+                        }
+                        updateFabIcon();
+                    }
+                } else {
+                    // El resultado no fue exitoso, manejar según sea necesario
+                    currentState = "PAUSED";
+                    updateFabIcon();
+                }
+            });
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -123,7 +152,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
                 bundle.putSerializable("categorias", ctgViewModel.getList().getValue());
                 bundle.putSerializable("list", list);
                 intent.putExtras(bundle);
-                startActivityForResult(intent, Constants.SECOND_ACTIVITY_REQUEST_CODE);
+                playerLauncher.launch(intent);
             }
         });
 
@@ -218,6 +247,9 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
             recyclerViewCategory.setAdapter(ctgAdapterHorizontal);
         } else {
             recyclerViewCategory.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+            txt_no_register.setVisibility(View.VISIBLE);
+            fab_container.setVisibility(View.GONE);
         }
     }
 
@@ -244,7 +276,6 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         recyclerViewAdapter = new VideoAdapter(list, this.getLifecycle(), MusicFragment.this);
         recycler_view.setAdapter(recyclerViewAdapter);
         recycler_view.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerViewAdapter.notifyDataSetChanged();
         if(list.isEmpty()) {
             txt_no_register.setVisibility(View.VISIBLE);
             fab_container.setVisibility(View.GONE);
@@ -288,7 +319,11 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
 
     @Override
     public void onDeletePosition(int index) {
-        msjConfirDelete(index);
+        if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+            msjConfirDelete(index);
+        } else {
+            com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+        }
     }
 
     private void msjConfirDelete(int index){
@@ -348,31 +383,5 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
             }
         }
         updateFabIcon();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.SECOND_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    int minutoExtra = data.getIntExtra("minuto", 0);
-                    int positionExtra = data.getIntExtra("position", 0);
-                    System.out.println("MINUTO: " + minutoExtra);
-                    System.out.println("POSICION: " + positionExtra);
-                    
-                    if (minutoExtra > 0) {
-                        currentState = "PLAYING";
-                    } else {
-                        currentState = "PAUSED";
-                    }
-                    updateFabIcon();
-                }
-            } else {
-                // El resultado no fue exitoso, manejar según sea necesario
-                currentState = "PAUSED";
-                updateFabIcon();
-            }
-        }
     }
 }

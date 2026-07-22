@@ -7,7 +7,7 @@
     android:drawablePadding="15dp"
     android:gravity="center_vertical"
     android:padding="10dp"
-    android:textColor="@android:color/black"
+    android:textColor="@color/text_primary"
     android:text="Mi Folder"
     android:textAllCaps="true"
     android:textSize="24dp"></TextView>

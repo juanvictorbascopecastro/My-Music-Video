@@ -101,14 +101,11 @@ public class YouTubeFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*Snackbar.make(view, getString(R.string.add_to_list), Snackbar.LENGTH_LONG)
-                        .setAction("OK", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                AgregarALista();
-                            }
-                        }).show();*/
-                AddList();
+                if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+                    AddList();
+                } else {
+                    com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+                }
             }
         });
     }

@@ -11,7 +11,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="?attr/selectableItemBackground"
         android:padding="10dp">
 
         <TextView
@@ -24,7 +24,7 @@
             android:gravity="left|center_vertical"
             android:text="Mis Favoritos"
             android:textAllCaps="true"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold"
             android:maxLines="2"

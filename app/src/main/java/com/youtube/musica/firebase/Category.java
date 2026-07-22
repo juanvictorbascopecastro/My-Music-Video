@@ -19,8 +19,8 @@ public class Category extends Firebase {
         return currentUser != null ? currentUser.getUid() : "";
     }
 
-    public Task loadCtg(){
-        Task query = db.collection(Constants.CATEGORIES_COLLECTION)
+    public Task<com.google.firebase.firestore.QuerySnapshot> loadCtg(){
+        Task<com.google.firebase.firestore.QuerySnapshot> query = db.collection(Constants.CATEGORIES_COLLECTION)
                 .whereEqualTo("idUser", getIdUser())
                 .get();
         return query;
