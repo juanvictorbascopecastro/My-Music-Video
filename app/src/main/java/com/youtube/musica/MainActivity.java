@@ -42,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Inicializar NewPipeExtractor
+        org.schabi.newpipe.extractor.NewPipe.init(com.youtube.musica.utils.DownloaderImpl.getInstance());
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

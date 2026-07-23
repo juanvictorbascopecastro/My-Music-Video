@@ -14,6 +14,7 @@
     <color name="background">#FFFFFF</color>
     <color name="text_primary">#000000</color>
     <color name="text_secondary">#666666</color>
+    <color name="search_bg">#F2F2F2</color>
     <color name="gradientStart">#FFB885</color>
     <color name="gradientEnd">#FF617E</color>
     <color name="playIcon">#FFFFFF</color>

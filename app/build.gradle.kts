@@ -37,6 +37,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -76,4 +77,12 @@ dependencies {
     //implementation("com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.23")
     implementation("androidx.mediarouter:mediarouter:1.8.1")
     implementation("androidx.media:media:1.8.0")
+    
+    // NewPipeExtractor para recomendaciones y búsqueda
+    implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.22.7")
+    // OkHttp para las solicitudes de red del extractor
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    
+    // Core Library Desugaring para compatibilidad de APIs Java nuevas en versiones antiguas de Android
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

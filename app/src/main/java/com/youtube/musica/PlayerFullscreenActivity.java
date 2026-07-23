@@ -74,7 +74,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     private Stack<Integer> shuffleHistory = new Stack<>();
 
     private NotificationHelper notificationHelper;
-    private PlayerEventBroadcaster eventBroadcaster;
+    // eventBroadcaster is now managed by Singleton
     private boolean isPlaying = false;
 
     // =========================================================================
@@ -127,7 +127,6 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         notificationHelper = new NotificationHelper(this);
 
         // Recuperar el último modo de reproducción guardado (Persistencia).
-        // Si no existe, se utiliza el MODE_SEQUENTIAL por defecto.
         SharedPreferences prefs = getSharedPreferences("MusicAppPrefs", Context.MODE_PRIVATE);
         currentPlaybackMode = prefs.getInt("playback_mode", MODE_SEQUENTIAL);
 
@@ -256,6 +255,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             if (bundle.containsKey("list")) {
                 list = (ArrayList<MusicCollection>) bundle.getSerializable("list");
                 shuffleHistory.clear();
+                updatePlaybackModeIcon();
             }
             if (bundle.containsKey("categorias")) {
                 list_ctg = (ArrayList<CategoryCollection>) bundle.getSerializable("categorias");
@@ -284,7 +284,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         // iniciar picture para reproducir
         initPictureInPicture();
         // Reiniciar el broadcast en segundo plano
-        eventBroadcaster = new PlayerEventBroadcaster(PlayerFullscreenActivity.this, this);
+        PlayerEventBroadcaster.getInstance().register(this, this);
         showNotification();
 
         youTubePlayerView.addYouTubePlayerListener(new AbstractYouTubePlayerListener() {
@@ -402,13 +402,10 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             indexPlayer += 1;
         } else if (currentPlaybackMode == MODE_SHUFFLE) {
             // Guardar el índice actual en el historial ANTES de cambiarlo a uno aleatorio.
-            // Esto permite que el botón "Anterior" funcione correctamente en modo
-            // aleatorio.
             shuffleHistory.push(indexPlayer);
             indexPlayer = new java.util.Random().nextInt(list.size());
         } else if (currentPlaybackMode == MODE_REPEAT_ONE) {
-            // Mantener el mismo indexPlayer para que el video se repita desde el inicio
-            // (0f)
+            // Mantener el mismo indexPlayer para que el video se repita
         }
 
         this.ytPlayer = youTubePlayer;
@@ -421,6 +418,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             youTubePlayer.loadVideo(currentYouTube.getIdvideo(), 0f);
         }
         disabledButton();
+        showNotification(); // Actualizar notificación para reflejar el nuevo estado
     }
 
     /**
@@ -439,16 +437,14 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
                 return;
             indexPlayer -= 1;
         } else if (currentPlaybackMode == MODE_SHUFFLE) {
-            // En modo aleatorio, primero verificamos si venimos de otra canción (historial)
+            // En modo aleatorio, usar el historial si existe
             if (!shuffleHistory.isEmpty()) {
-                // Recuperar la última canción aleatoria escuchada
                 indexPlayer = shuffleHistory.pop();
             } else {
-                // Si no hay historial (ej. recién abrimos la app), elegir una al azar
                 indexPlayer = new java.util.Random().nextInt(list.size());
             }
         } else if (currentPlaybackMode == MODE_REPEAT_ONE) {
-            // Mantener el mismo indexPlayer y recargar el video actual
+            // Mantener el mismo indexPlayer
         }
 
         this.ytPlayer = youTubePlayer;
@@ -524,7 +520,7 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         bufferingHandler.removeCallbacks(bufferingRunnable);
         if (youTubePlayerView != null) {
             youTubePlayerView.release();
-            unregisterReceiver(eventBroadcaster.playbackReceiver);
+            PlayerEventBroadcaster.getInstance().unregisterListener(this);
         }
         if (notificationHelper != null) {
             notificationHelper.cancelNotification();
@@ -792,6 +788,18 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
             } else {
                 youTubePlayerView.wrapContent();
             }
+        }
+    }
+
+    @Override
+    public void onLostActiveFocus() {
+        // Otro reproductor ha tomado el control (ej. HomeFragment). 
+        // Debemos pausarnos para no tener dos audios al mismo tiempo.
+        if (ytPlayer != null && isPlaying) {
+            ytPlayer.pause();
+        }
+        if (notificationHelper != null) {
+            notificationHelper.cancelNotification();
         }
     }
 }

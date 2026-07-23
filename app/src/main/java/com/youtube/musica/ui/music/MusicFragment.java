@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import com.youtube.musica.PlayerFullscreenActivity;
 import com.youtube.musica.R;
 import com.youtube.musica.adapter.CtgAdapterHorizontal;
-import com.youtube.musica.adapter.VideoAdapter;
+import com.youtube.musica.adapter.MusicAdapter;
 import com.youtube.musica.databinding.FragmentMusicBinding;
 import com.youtube.musica.dialog.progress;
 import com.youtube.musica.firebase.Category;
@@ -73,7 +73,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
     private ObjectAnimator loadingAnimator = null;
 
     private FragmentMusicBinding binding;
-    public VideoAdapter recyclerViewAdapter;
+    public MusicAdapter recyclerViewAdapter;
     MusicViewModel musicViewModel;
     CtgViewModel ctgViewModel;
     private Music db;
@@ -273,7 +273,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
      */
     private void showData(){
         progressBar.setVisibility(View.GONE);
-        recyclerViewAdapter = new VideoAdapter(list, this.getLifecycle(), MusicFragment.this);
+        recyclerViewAdapter = new MusicAdapter(list, this.getLifecycle(), MusicFragment.this);
         recycler_view.setAdapter(recyclerViewAdapter);
         recycler_view.setLayoutManager(new LinearLayoutManager(getContext()));
         if(list.isEmpty()) {
@@ -305,6 +305,11 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         if (recyclerViewAdapter != null) {
             recyclerViewAdapter.playItem(position);
         }
+    }
+
+    @Override
+    public void onVideoLongClicked(int position) {
+        // Do nothing for now in MusicFragment
     }
 
     @Override

@@ -4,4 +4,5 @@
     <color name="background">#0A0F1A</color>
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#AAAAAA</color>
+    <color name="search_bg">#1E2532</color>
 </resources>

@@ -133,7 +133,7 @@ public class YoutubeSearchFragment extends Fragment {
         executor.execute(() -> {
             try {
                 String encodedQuery = URLEncoder.encode(query, "UTF-8");
-                String urlStr = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=" + encodedQuery + "&type=video&key=" + API_KEY;
+                String urlStr = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&videoEmbeddable=true&q=" + encodedQuery + "&type=video&key=" + API_KEY;
                 
                 URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();

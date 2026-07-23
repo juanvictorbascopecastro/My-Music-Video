@@ -5,4 +5,5 @@ public interface PlayerListener {
     void onNextNotification();
     void onPreviewNotification();
     void onPlaybackModeNotification();
+    void onLostActiveFocus();
 }

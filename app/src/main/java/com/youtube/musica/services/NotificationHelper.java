@@ -28,8 +28,10 @@ import com.youtube.musica.models.MusicCollection;
 import java.util.ArrayList;
 
 /**
- * Clase encargada de gestionar y mostrar las notificaciones del reproductor de música.
- * También configura la MediaSession, la cual permite controlar la reproducción desde
+ * Clase encargada de gestionar y mostrar las notificaciones del reproductor de
+ * música.
+ * También configura la MediaSession, la cual permite controlar la reproducción
+ * desde
  * la pantalla de bloqueo, relojes inteligentes o auriculares Bluetooth.
  */
 @SuppressWarnings("deprecation")
@@ -45,36 +47,43 @@ public class NotificationHelper {
         this.context = context;
         this.notificationManager = NotificationManagerCompat.from(context);
         createNotificationChannel();
-        // MediaSessionCompat sirve para integrarse con los controles del sistema (pantalla de bloqueo, auriculares, etc.)
+        // MediaSessionCompat sirve para integrarse con los controles del sistema
+        // (pantalla de bloqueo, auriculares, etc.)
         mediaSession = new MediaSessionCompat(context, "PlayerMediaSession");
-        
-        // Configuramos qué pasa cuando el sistema (fuera de la app) solicita cambiar la reproducción
+
+        // Configuramos qué pasa cuando el sistema (fuera de la app) solicita cambiar la
+        // reproducción
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public void onPlay() {
-                context.sendBroadcast(new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(context.getPackageName()));
+                context.sendBroadcast(
+                        new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(context.getPackageName()));
             }
 
             @Override
             public void onPause() {
-                context.sendBroadcast(new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(context.getPackageName()));
+                context.sendBroadcast(
+                        new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(context.getPackageName()));
             }
 
             @Override
             public void onSkipToNext() {
-                context.sendBroadcast(new Intent(PlayerEventBroadcaster.ACTION_NEXT).setPackage(context.getPackageName()));
+                context.sendBroadcast(
+                        new Intent(PlayerEventBroadcaster.ACTION_NEXT).setPackage(context.getPackageName()));
             }
 
             @Override
             public void onSkipToPrevious() {
-                context.sendBroadcast(new Intent(PlayerEventBroadcaster.ACTION_PREVIOUS).setPackage(context.getPackageName()));
+                context.sendBroadcast(
+                        new Intent(PlayerEventBroadcaster.ACTION_PREVIOUS).setPackage(context.getPackageName()));
             }
         });
     }
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Background Player", NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Background Player",
+                    NotificationManager.IMPORTANCE_LOW);
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
@@ -83,58 +92,73 @@ public class NotificationHelper {
     }
 
     /**
-     * Prepara y muestra una notificación persistente para el control de reproducción en segundo plano.
-     * Esta función centraliza la creación de los PendingIntents necesarios para las acciones
-     * del reproductor (Play/Pausa, Siguiente, Anterior) y calcula si dichos botones deben
+     * Prepara y muestra una notificación persistente para el control de
+     * reproducción en segundo plano.
+     * Esta función centraliza la creación de los PendingIntents necesarios para las
+     * acciones
+     * del reproductor (Play/Pausa, Siguiente, Anterior) y calcula si dichos botones
+     * deben
      * estar habilitados basándose en el estado de la lista de reproducción.
      * 
-     * @param targetActivityClass La clase de la actividad a la que se dirigirá al pulsar la notificación (ej. PlayerFullscreenActivity.class).
-     * @param list Lista actual de videos/canciones en reproducción.
-     * @param indexPlayer Índice actual del video que se está reproduciendo en la lista.
-     * @param isPlaying Estado actual de reproducción: true si está reproduciendo, false si está pausado.
-     * @param currentPlaybackMode Modo actual de reproducción (Secuencial, Aleatorio, Repetir 1).
+     * @param targetActivityClass La clase de la actividad a la que se dirigirá al
+     *                            pulsar la notificación (ej.
+     *                            PlayerFullscreenActivity.class).
+     * @param list                Lista actual de videos/canciones en reproducción.
+     * @param indexPlayer         Índice actual del video que se está reproduciendo
+     *                            en la lista.
+     * @param isPlaying           Estado actual de reproducción: true si está
+     *                            reproduciendo, false si está pausado.
+     * @param currentPlaybackMode Modo actual de reproducción (Secuencial,
+     *                            Aleatorio, Repetir 1).
      */
     @SuppressLint("MissingPermission")
-    public void showNotification(Class<?> targetActivityClass, ArrayList<MusicCollection> list, int indexPlayer, boolean isPlaying, int currentPlaybackMode) {
+    public void showNotification(Class<?> targetActivityClass, ArrayList<MusicCollection> list, int indexPlayer,
+            boolean isPlaying, int currentPlaybackMode) {
+        showNotification(targetActivityClass, list, indexPlayer, isPlaying, currentPlaybackMode, true);
+    }
+
+    @SuppressLint("MissingPermission")
+    public void showNotification(Class<?> targetActivityClass, ArrayList<MusicCollection> list, int indexPlayer,
+            boolean isPlaying, int currentPlaybackMode, boolean showModeButton) {
         if (list == null || list.isEmpty() || indexPlayer < 0 || indexPlayer >= list.size()) {
             return;
         }
 
-        // Creamos los PendingIntent que se ejecutarán cuando el usuario pulse los botones de la notificación
+        // Creamos los PendingIntent que se ejecutarán cuando el usuario pulse los
+        // botones de la notificación
         PendingIntent contentIntent = PendingIntent.getActivity(
                 context,
                 0,
                 new Intent(context, targetActivityClass),
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        // Pendientes de accion para los botones de la notificación
         PendingIntent previousIntent = PendingIntent.getBroadcast(
                 context,
                 0,
                 new Intent(PlayerEventBroadcaster.ACTION_PREVIOUS).setPackage(context.getPackageName()),
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        // PendingIntent para Play/Pause
         PendingIntent playPauseIntent = PendingIntent.getBroadcast(
                 context,
                 0,
                 new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(context.getPackageName()),
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        // PendingIntent para Next
         PendingIntent nextIntent = PendingIntent.getBroadcast(
                 context,
                 0,
                 new Intent(PlayerEventBroadcaster.ACTION_NEXT).setPackage(context.getPackageName()),
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        // PendingIntent para el modo de reproducción
         PendingIntent modeIntent = PendingIntent.getBroadcast(
                 context,
                 0,
                 new Intent(PlayerEventBroadcaster.ACTION_PLAYBACK_MODE).setPackage(context.getPackageName()),
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         int modeIcon;
         switch (currentPlaybackMode) {
@@ -150,18 +174,19 @@ public class NotificationHelper {
                 break;
         }
 
-        // Lógica para determinar si habilitar los botones anterior/siguiente según la posición en la lista
+        // Lógica para determinar si habilitar los botones anterior/siguiente según la
+        // posición en la lista
         boolean isNextActive, isPreviewActive;
-        if(list.size() == 1){
+        if (list.size() == 1) {
             isNextActive = false;
             isPreviewActive = false;
-        }else if(indexPlayer == list.size()-1){
+        } else if (indexPlayer == list.size() - 1) {
             isNextActive = false;
             isPreviewActive = true;
-        }else if(indexPlayer == 0){
+        } else if (indexPlayer == 0) {
             isNextActive = true;
             isPreviewActive = false;
-        }else{
+        } else {
             isNextActive = true;
             isPreviewActive = true;
         }
@@ -176,8 +201,10 @@ public class NotificationHelper {
                 .load(imageUrl)
                 .into(new CustomTarget<Bitmap>() {
                     @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        buildAndShowNotification(title, resource, contentIntent, modeIntent, modeIcon, previousIntent, playPauseIntent, nextIntent, isPlaying, isNextActive, isPreviewActive);
+                    public void onResourceReady(@NonNull Bitmap resource,
+                            @Nullable Transition<? super Bitmap> transition) {
+                        buildAndShowNotification(title, resource, contentIntent, modeIntent, modeIcon, previousIntent,
+                                playPauseIntent, nextIntent, isPlaying, isNextActive, isPreviewActive, showModeButton);
                     }
 
                     @Override
@@ -187,21 +214,24 @@ public class NotificationHelper {
                     @Override
                     public void onLoadFailed(@Nullable Drawable errorDrawable) {
                         // Si falla la descarga, mostramos la notificación sin la imagen grande
-                        buildAndShowNotification(title, null, contentIntent, modeIntent, modeIcon, previousIntent, playPauseIntent, nextIntent, isPlaying, isNextActive, isPreviewActive);
+                        buildAndShowNotification(title, null, contentIntent, modeIntent, modeIcon, previousIntent,
+                                playPauseIntent, nextIntent, isPlaying, isNextActive, isPreviewActive, showModeButton);
                     }
                 });
     }
 
     /**
-     * Construye y lanza la notificación final después de haber obtenido la imagen (o haber fallado).
-     * También actualiza la MediaSession para sincronizar los estados en el sistema Android.
+     * Construye y lanza la notificación final después de haber obtenido la imagen
+     * (o haber fallado).
+     * También actualiza la MediaSession para sincronizar los estados en el sistema
+     * Android.
      */
     @SuppressLint("MissingPermission")
     private void buildAndShowNotification(String title, Bitmap largeIcon, PendingIntent contentIntent,
-                                          PendingIntent modeIntent, int modeIcon,
-                                          PendingIntent previousIntent, PendingIntent playPauseIntent,
-                                          PendingIntent nextIntent, boolean isPlaying, boolean isNextActive,
-                                          boolean isPreviewActive) {
+            PendingIntent modeIntent, int modeIcon,
+            PendingIntent previousIntent, PendingIntent playPauseIntent,
+            PendingIntent nextIntent, boolean isPlaying, boolean isNextActive,
+            boolean isPreviewActive, boolean showModeButton) {
 
         // Configuración visual básica de la notificación
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
@@ -218,8 +248,7 @@ public class NotificationHelper {
             builder.setLargeIcon(largeIcon);
         }
 
-        // Action Playback Mode (Index 0)
-        builder.addAction(new NotificationCompat.Action(modeIcon, "Mode", modeIntent));
+        // (Mode button will be added after Next)
 
         // Action Previous (Index 1)
         int prevIcon = isPreviewActive ? R.drawable.ic_previous : R.drawable.ic_previous_disabled;
@@ -231,10 +260,15 @@ public class NotificationHelper {
         String playPauseTitle = isPlaying ? "Pause" : "Play";
         builder.addAction(new NotificationCompat.Action(playPauseIcon, playPauseTitle, playPauseIntent));
 
-        // Action Next
+        // Action Next (Index 2)
         int nextIcon = isNextActive ? R.drawable.ic_next : R.drawable.ic_next_disabled;
         PendingIntent finalNextIntent = isNextActive ? nextIntent : null;
         builder.addAction(new NotificationCompat.Action(nextIcon, "Next", finalNextIntent));
+
+        // Action Playback Mode (Index 3 si visible)
+        if (showModeButton) {
+            builder.addAction(new NotificationCompat.Action(modeIcon, "Mode", modeIntent));
+        }
 
         // Aplicar MediaSession y MediaMetadata para la pantalla de bloqueo
         if (mediaSession != null) {
@@ -252,9 +286,11 @@ public class NotificationHelper {
             long actions = PlaybackStateCompat.ACTION_PLAY_PAUSE
                     | PlaybackStateCompat.ACTION_PLAY
                     | PlaybackStateCompat.ACTION_PAUSE;
-            
-            if (isNextActive) actions |= PlaybackStateCompat.ACTION_SKIP_TO_NEXT;
-            if (isPreviewActive) actions |= PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
+
+            if (isNextActive)
+                actions |= PlaybackStateCompat.ACTION_SKIP_TO_NEXT;
+            if (isPreviewActive)
+                actions |= PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
 
             int state = isPlaying ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
 
@@ -268,14 +304,18 @@ public class NotificationHelper {
         }
 
         // Apply MediaStyle para que la notificación se vea como un reproductor nativo
+        // Al estar Previous, Play y Next en los índices 0, 1 y 2, simplemente usamos
+        // esos índices.
         builder.setStyle(new MediaStyle()
-                .setShowActionsInCompactView(1, 2, 3) // Muestra Previous, Play/Pause y Next en vista compacta
+                .setShowActionsInCompactView(0, 1, 2) // Muestra Previous, Play/Pause y Next en vista compacta
                 .setMediaSession(mediaSession.getSessionToken()));
 
         Notification notification = builder.build();
 
-        // Lanzamos un servicio en primer plano (Foreground Service) asociado a esta notificación.
-        // Esto previene que el sistema Android mate nuestra app cuando está en segundo plano.
+        // Lanzamos un servicio en primer plano (Foreground Service) asociado a esta
+        // notificación.
+        // Esto previene que el sistema Android mate nuestra app cuando está en segundo
+        // plano.
         YouTubeBackgroundService.currentNotification = notification;
         Intent serviceIntent = new Intent(context, YouTubeBackgroundService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -285,6 +325,7 @@ public class NotificationHelper {
         }
     }
 
+    // Cancela la notificación y libera recursos asociados a la MediaSession.
     public void cancelNotification() {
         notificationManager.cancel(NOTIFICATION_ID);
         context.stopService(new Intent(context, YouTubeBackgroundService.class));
@@ -293,7 +334,7 @@ public class NotificationHelper {
         }
     }
 
-    private static final int MAX_TITLE_LENGTH = 40;
+    private static final int MAX_TITLE_LENGTH = 40; // Longitud máxima del título antes de truncarlo
 
     private String truncateTitle(String title) {
         if (title.length() > MAX_TITLE_LENGTH) {
