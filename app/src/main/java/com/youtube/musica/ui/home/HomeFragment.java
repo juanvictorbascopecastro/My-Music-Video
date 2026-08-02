@@ -164,7 +164,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
                     PlayerEventBroadcaster.getInstance().register(requireContext(), HomeFragment.this);
                     isPlaying = true;
                     isUserIntentionallyPaused = false;
-                    binding.recyclerViewHome.setVisibility(View.GONE);
+                    
                     if (currentPlayingPosition != -1 && !musicList.isEmpty()) {
                         isUserIntentionallyPaused = false;
                         showNotification();
@@ -213,6 +213,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
             currentMinutesPlayer = data.getFloatExtra("minuto", currentMinutesPlayer);
             
             if (currentPlayingPosition != -1 && !musicList.isEmpty() && currentPlayingPosition < musicList.size()) {
+                adapter.setCurrentPlayingPosition(currentPlayingPosition);
                 MusicCollection selectedMusic = musicList.get(currentPlayingPosition);
                 binding.miniPlayerContainer.setVisibility(View.VISIBLE);
                 if (globalPlayer != null) {
@@ -226,6 +227,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
     private void playNextVideo() {
         if (currentPlayingPosition != -1 && currentPlayingPosition < musicList.size() - 1) {
             currentPlayingPosition++;
+            adapter.setCurrentPlayingPosition(currentPlayingPosition);
             MusicCollection nextMusic = musicList.get(currentPlayingPosition);
             if (globalPlayer != null) {
                 globalPlayer.loadVideo(nextMusic.getIdvideo(), 0f);
@@ -345,6 +347,8 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
         mainHandler.post(() -> {
             binding.progressBarHome.setVisibility(View.GONE);
             musicList.clear();
+            currentPlayingPosition = -1;
+            if (adapter != null) adapter.setCurrentPlayingPosition(-1);
             
             for (StreamInfoItem item : streamItems) {
                 MusicCollection music = new MusicCollection();
@@ -376,6 +380,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
     @Override
     public void onVideoClicked(int position) {
         currentPlayingPosition = position;
+        adapter.setCurrentPlayingPosition(currentPlayingPosition);
         MusicCollection selectedMusic = musicList.get(position);
         
         binding.miniPlayerContainer.setVisibility(View.VISIBLE);
@@ -398,12 +403,62 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
                 List<StreamInfoItem> recommendedItems = new ArrayList<>();
                 
                 try {
-                    StreamInfo streamInfo = StreamInfo.getInfo(ServiceList.YouTube, videoUrl);
+                    // ==============================================================================
+                    // OPCIÓN 0 (ACTUALMENTE ACTIVA): Extraer de "Videos Relacionados" de la barra lateral.
+                    // A menudo repite la misma canción o muestra versiones en vivo.
+                    // ==============================================================================
+                    /*StreamInfo streamInfo = StreamInfo.getInfo(ServiceList.YouTube, videoUrl);
                     for (org.schabi.newpipe.extractor.InfoItem item : streamInfo.getRelatedItems()) {
                         if (item instanceof StreamInfoItem) {
                             recommendedItems.add((StreamInfoItem) item);
                         }
+                    }*/
+
+                    // ==============================================================================
+                    // OTRAS ALTERNATIVAS PARA PROBAR (Descomenta UNA de las siguientes y comenta la Opción 0)
+                    // ==============================================================================
+                    
+                    // OPCIÓN 1 (Recomendada): YouTube Mix (Radio Automática).
+                    // Genera canciones variadas del mismo género sin repetir de inmediato.
+
+                    String mixUrl = "https://www.youtube.com/watch?v=" + sourceMusic.getIdvideo() + "&list=RD" + sourceMusic.getIdvideo();
+                    org.schabi.newpipe.extractor.playlist.PlaylistInfo mixInfo = org.schabi.newpipe.extractor.playlist.PlaylistInfo.getInfo(ServiceList.YouTube, mixUrl);
+                    for (org.schabi.newpipe.extractor.InfoItem item : mixInfo.getRelatedItems()) {
+                        if (item instanceof StreamInfoItem) {
+                            StreamInfoItem streamItem = (StreamInfoItem) item;
+                            if (!streamItem.getUrl().contains(sourceMusic.getIdvideo())) { // Evitar la canción raíz
+                                recommendedItems.add(streamItem);
+                            }
+                        }
                     }
+                    
+
+                    // OPCIÓN 2: Videos del Mismo Artista (Canal Oficial).
+                    // Obtiene primero la info del video y luego raspa el canal del artista.
+                    /*
+                    StreamInfo infoForChannel = StreamInfo.getInfo(ServiceList.YouTube, videoUrl);
+                    org.schabi.newpipe.extractor.channel.ChannelInfo channelInfo = org.schabi.newpipe.extractor.channel.ChannelInfo.getInfo(ServiceList.YouTube, infoForChannel.getUploaderUrl());
+                    for (org.schabi.newpipe.extractor.InfoItem item : channelInfo.getRelatedItems()) {
+                        if (item instanceof StreamInfoItem) {
+                            recommendedItems.add((StreamInfoItem) item);
+                        }
+                    }
+                    */
+
+                    // OPCIÓN 3: Búsqueda Inteligente (Algoritmo Modificado).
+                    // Fuerza al buscador agregando la palabra "Mix" para mayor variedad.
+                    /*
+                    String smartQuery = sourceMusic.getName() + " Mix";
+                    SearchInfo smartSearch = SearchInfo.getInfo(ServiceList.YouTube, ServiceList.YouTube.getSearchQHFactory().fromQuery(smartQuery));
+                    for (org.schabi.newpipe.extractor.InfoItem item : smartSearch.getRelatedItems()) {
+                        if (item instanceof StreamInfoItem) {
+                            StreamInfoItem streamItem = (StreamInfoItem) item;
+                            if (!streamItem.getUrl().contains(sourceMusic.getIdvideo())) {
+                                recommendedItems.add(streamItem);
+                            }
+                        }
+                    }
+                    */
                 } catch (Exception e) {
                     e.printStackTrace();
                     String fallbackQuery = sourceMusic.getName();
@@ -471,7 +526,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
             String videoUrl = "https://www.youtube.com/watch?v=" + item.getIdvideo();
             new AddMusic(getContext(), ctgViewModel.getList().getValue(), videoUrl, item.getIdvideo(), item.getName());
         } else {
-            com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+            com.youtube.musica.utils.AuthUtils.requireLogin(getContext(), "Para crear carpetas y guardar tus canciones, necesitas iniciar sesión con tu cuenta de Google.");
         }
     }
 
@@ -515,6 +570,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
     public void onPreviewNotification() {
         if (currentPlayingPosition > 0) {
             currentPlayingPosition--;
+            adapter.setCurrentPlayingPosition(currentPlayingPosition);
             MusicCollection prevMusic = musicList.get(currentPlayingPosition);
             if (globalPlayer != null) {
                 globalPlayer.loadVideo(prevMusic.getIdvideo(), 0f);

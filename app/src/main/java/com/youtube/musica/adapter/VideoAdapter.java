@@ -19,10 +19,23 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
 
     private final ArrayList<MusicCollection> videoIds;
     public MusicListener listener;
+    private int currentPlayingPosition = -1;
 
     public VideoAdapter(ArrayList<MusicCollection> videoIds, MusicListener listener) {
         this.videoIds = videoIds;
         this.listener = listener;
+    }
+
+    public void setCurrentPlayingPosition(int position) {
+        int oldPosition = currentPlayingPosition;
+        currentPlayingPosition = position;
+        
+        if (oldPosition != -1) {
+            notifyItemChanged(oldPosition);
+        }
+        if (currentPlayingPosition != -1) {
+            notifyItemChanged(currentPlayingPosition);
+        }
     }
 
     @Override
@@ -50,12 +63,16 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
     public class VideoViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imgThumbnail;
         private final TextView tvVideoTitle;
+        private final ImageView imgPlayIcon;
+        private final ImageView imgPlayingIndicator;
         private final View overlayView;
 
         public VideoViewHolder(View view, MusicListener listener) {
             super(view);
             imgThumbnail = view.findViewById(R.id.imgThumbnail);
             tvVideoTitle = view.findViewById(R.id.tvVideoTitle);
+            imgPlayIcon = view.findViewById(R.id.imgPlayIcon);
+            imgPlayingIndicator = view.findViewById(R.id.imgPlayingIndicator);
             overlayView = view.findViewById(R.id.overlay_view);
 
             overlayView.setOnClickListener(v -> {
@@ -82,6 +99,22 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
                         .load(thumbUrl)
                         .centerCrop()
                         .into(imgThumbnail);
+            }
+            
+            if (getAdapterPosition() == currentPlayingPosition) {
+                // Item en reproducción: Ocultar icono play, mostrar GIF animado
+                if (imgPlayIcon != null) imgPlayIcon.setVisibility(View.GONE);
+                if (imgPlayingIndicator != null) {
+                    imgPlayingIndicator.setVisibility(View.VISIBLE);
+                    Glide.with(itemView.getContext())
+                            .asGif()
+                            .load(R.drawable.player)
+                            .into(imgPlayingIndicator);
+                }
+            } else {
+                // Item normal: Mostrar icono play, ocultar GIF
+                if (imgPlayIcon != null) imgPlayIcon.setVisibility(View.VISIBLE);
+                if (imgPlayingIndicator != null) imgPlayingIndicator.setVisibility(View.GONE);
             }
         }
     }

@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             if (id == R.id.nav_music || id == R.id.nav_ctg) {
                 if (!AuthUtils.isLoggedIn()) {
                     pendingDestination = id;
-                    AuthUtils.requireLogin(this);
+                    AuthUtils.requireLogin(this, "Para acceder a tus carpetas y música guardada, necesitas iniciar sesión con tu cuenta de Google.");
                     binding.drawerLayout.closeDrawers();
                     return false; 
                 }
@@ -119,13 +119,12 @@ public class MainActivity extends AppCompatActivity {
                         mGoogleSignInClient.signOut().addOnCompleteListener(MainActivity.this, task -> {
                             updateNavHeader(binding.navView);
                             invalidateMenu();
+                            if (navController.getCurrentDestination() != null && navController.getCurrentDestination().getId() != R.id.nav_home) {
+                                navController.popBackStack(R.id.nav_home, false);
+                            }
                         });
-                        if (isTaskRoot()) {
-                            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                        }
-                        finish();
                     } else {
-                        AuthUtils.requireLogin(MainActivity.this);
+                        AuthUtils.requireLogin(MainActivity.this, "Inicia sesión para disfrutar de todas las funciones de My Music Video.");
                     }
                     return true;
                 }

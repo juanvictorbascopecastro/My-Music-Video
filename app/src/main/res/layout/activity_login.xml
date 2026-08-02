@@ -40,9 +40,11 @@
             android:layout_marginBottom="32dp"/>
 
         <TextView
+            android:id="@+id/tv_login_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Inicia sesión para continuar"
+            android:textAlignment="center"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
             android:layout_marginBottom="24dp"/>
