@@ -13,6 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer;
@@ -35,6 +37,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.youtube.musica.dialog.AddMusic;
 import com.youtube.musica.firebase.Category;
 import com.youtube.musica.ui.ctg.CtgViewModel;
+import com.youtube.musica.utils.AuthUtils;
 
 import org.schabi.newpipe.extractor.ServiceList;
 import org.schabi.newpipe.extractor.search.SearchInfo;
@@ -68,6 +71,26 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
     private CtgViewModel ctgViewModel;
     private Category dbCategory;
     private ArrayList<CategoryCollection> ctgList;
+
+    private final ActivityResultLauncher<android.content.Intent> playerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    android.content.Intent data = result.getData();
+                    currentPlayingPosition = data.getIntExtra("position", currentPlayingPosition);
+                    currentMinutesPlayer = data.getFloatExtra("minuto", currentMinutesPlayer);
+                    
+                    if (currentPlayingPosition != -1 && !musicList.isEmpty() && currentPlayingPosition < musicList.size()) {
+                        adapter.setCurrentPlayingPosition(currentPlayingPosition);
+                        MusicCollection selectedMusic = musicList.get(currentPlayingPosition);
+                        binding.miniPlayerContainer.setVisibility(View.VISIBLE);
+                        if (globalPlayer != null) {
+                            isUserIntentionallyPaused = false;
+                            globalPlayer.loadVideo(selectedMusic.getIdvideo(), currentMinutesPlayer);
+                        }
+                    }
+                }
+            });
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -142,7 +165,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
                     } else {
                         intent.putExtra("categorias", new ArrayList<CategoryCollection>());
                     }
-                    startActivityForResult(intent, 100);
+                    playerLauncher.launch(intent);
                 }
             }
 
@@ -205,24 +228,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable android.content.Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 100 && resultCode == android.app.Activity.RESULT_OK && data != null) {
-            currentPlayingPosition = data.getIntExtra("position", currentPlayingPosition);
-            currentMinutesPlayer = data.getFloatExtra("minuto", currentMinutesPlayer);
-            
-            if (currentPlayingPosition != -1 && !musicList.isEmpty() && currentPlayingPosition < musicList.size()) {
-                adapter.setCurrentPlayingPosition(currentPlayingPosition);
-                MusicCollection selectedMusic = musicList.get(currentPlayingPosition);
-                binding.miniPlayerContainer.setVisibility(View.VISIBLE);
-                if (globalPlayer != null) {
-                    isUserIntentionallyPaused = false;
-                    globalPlayer.loadVideo(selectedMusic.getIdvideo(), currentMinutesPlayer);
-                }
-            }
-        }
-    }
+
 
     private void playNextVideo() {
         if (currentPlayingPosition != -1 && currentPlayingPosition < musicList.size() - 1) {
@@ -345,6 +351,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
 
     private void updateListOnMainThread(List<StreamInfoItem> streamItems) {
         mainHandler.post(() -> {
+            if (binding == null) return;
             binding.progressBarHome.setVisibility(View.GONE);
             musicList.clear();
             currentPlayingPosition = -1;
@@ -362,7 +369,12 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
             }
             
             adapter.notifyDataSetChanged();
-            if (!musicList.isEmpty()) {
+            if (musicList.isEmpty()) {
+                binding.tvEmptyState.setVisibility(View.VISIBLE);
+                binding.recyclerViewHome.setVisibility(View.GONE);
+            } else {
+                binding.tvEmptyState.setVisibility(View.GONE);
+                binding.recyclerViewHome.setVisibility(View.VISIBLE);
                 binding.recyclerViewHome.postDelayed(() -> binding.recyclerViewHome.smoothScrollToPosition(0), 100);
             }
         });
@@ -370,9 +382,15 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
 
     private void showErrorOnMainThread(String message) {
         mainHandler.post(() -> {
+            if (binding == null) return;
             binding.progressBarHome.setVisibility(View.GONE);
             if (getContext() != null) {
-                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            }
+            if (musicList.isEmpty()) {
+                binding.tvEmptyState.setVisibility(View.VISIBLE);
+                binding.tvEmptyState.setText("No se encontraron registros.\n" + message);
+                binding.recyclerViewHome.setVisibility(View.GONE);
             }
         });
     }
@@ -484,6 +502,7 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
 
     private void appendRecommendationsOnMainThread(List<StreamInfoItem> streamItems) {
         mainHandler.post(() -> {
+            if (binding == null) return;
             binding.progressBarHome.setVisibility(View.GONE);
             int initialSize = musicList.size();
             
@@ -521,12 +540,12 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
 
     @Override
     public void onVideoLongClicked(int position) {
-        if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+        if (AuthUtils.isLoggedIn()) {
             MusicCollection item = musicList.get(position);
             String videoUrl = "https://www.youtube.com/watch?v=" + item.getIdvideo();
             new AddMusic(getContext(), ctgViewModel.getList().getValue(), videoUrl, item.getIdvideo(), item.getName());
         } else {
-            com.youtube.musica.utils.AuthUtils.requireLogin(getContext(), "Para crear carpetas y guardar tus canciones, necesitas iniciar sesión con tu cuenta de Google.");
+            AuthUtils.requireLogin(getContext(), "Para crear carpetas y guardar tus canciones, necesitas iniciar sesión con tu cuenta de Google.");
         }
     }
 

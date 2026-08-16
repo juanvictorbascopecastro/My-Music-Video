@@ -214,6 +214,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         ctgDb.loadCtg().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                progress.diss();
                 if(!task.getResult().isEmpty()){
                     CategoryCollection ctg;
                     for(QueryDocumentSnapshot snapshot : task.getResult()) {
@@ -248,6 +249,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         } else {
             recyclerViewCategory.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
+            txt_no_register.setText(getString(R.string.no_categories));
             txt_no_register.setVisibility(View.VISIBLE);
             fab_container.setVisibility(View.GONE);
         }
@@ -277,6 +279,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         recycler_view.setAdapter(recyclerViewAdapter);
         recycler_view.setLayoutManager(new LinearLayoutManager(getContext()));
         if(list.isEmpty()) {
+            txt_no_register.setText(getString(R.string.no_register));
             txt_no_register.setVisibility(View.VISIBLE);
             fab_container.setVisibility(View.GONE);
         }else {

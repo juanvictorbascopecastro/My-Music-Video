@@ -78,13 +78,34 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     private boolean isPlaying = false;
 
     // =========================================================================
+    // VARIABLES PARA GESTIÓN DE AUDIO Y AUDÍFONOS
+    // =========================================================================
+    private android.media.AudioManager audioManager;
+    // Bandera para recordar si la música fue pausada temporalmente por el sistema (ej. otra app sonó)
+    private boolean resumeOnFocusGain = false;
+    private android.media.AudioDeviceCallback audioDeviceCallback;
+    
+    // Receptor que detecta cuando se desconectan los audífonos (para evitar que suene por el altavoz de golpe)
+    private BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                if (ytPlayer != null && isPlaying) {
+                    ytPlayer.pause(); // Pausar inmediatamente la reproducción
+                }
+            }
+        }
+    };
+
+    // Callback para detectar cuando otras apps dejan de reproducir sonido (Android 8.0+)
+    private android.media.AudioManager.AudioPlaybackCallback audioPlaybackCallback;
+
+    // =========================================================================
     // MODOS DE REPRODUCCIÓN (Playback Modes)
     // =========================================================================
     // MODE_SEQUENTIAL: Reproduce de forma lineal. Se detiene al final o inicio.
-    // MODE_SHUFFLE: Escoge videos al azar. Usa 'shuffleHistory' para recordar el
-    // historial.
-    // MODE_REPEAT_ONE: Repite el mismo video indefinidamente (no altera el
-    // indexPlayer).
+    // MODE_SHUFFLE: Escoge videos al azar. Usa 'shuffleHistory' para recordar el historial.
+    // MODE_REPEAT_ONE: Repite el mismo video indefinidamente (no altera el indexPlayer).
     private static final int MODE_SEQUENTIAL = 0;
     private static final int MODE_SHUFFLE = 1;
     private static final int MODE_REPEAT_ONE = 2;
@@ -125,6 +146,9 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         musicDataBase = new Music(PlayerFullscreenActivity.this, this);
 
         notificationHelper = new NotificationHelper(this);
+        // Inicializamos el AudioManager para manejar el sonido y los audífonos
+        audioManager = (android.media.AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        initAudioCallbacks();
 
         // Recuperar el último modo de reproducción guardado (Persistencia).
         SharedPreferences prefs = getSharedPreferences("MusicAppPrefs", Context.MODE_PRIVATE);
@@ -242,6 +266,67 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
         });
     }
 
+    private void initAudioCallbacks() {
+        // Registrar el receptor para pausar la música cuando se desconectan los audífonos
+        IntentFilter filter = new IntentFilter(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+        registerReceiver(noisyReceiver, filter);
+
+        // Registrar el callback para reproducir la música cuando se conectan audífonos (Requiere Android M+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            audioDeviceCallback = new android.media.AudioDeviceCallback() {
+                private boolean isInitial = true; // Para evitar reproducir música accidentalmente nada más abrir la app
+                
+                @Override
+                public void onAudioDevicesAdded(android.media.AudioDeviceInfo[] addedDevices) {
+                    // Ignoramos la primera llamada automática que hace Android al registrar el callback
+                    if (isInitial) {
+                        isInitial = false;
+                        return;
+                    }
+                    
+                    // Verificamos si el dispositivo agregado es algún tipo de audífono
+                    boolean isHeadphones = false;
+                    for (android.media.AudioDeviceInfo info : addedDevices) {
+                        int type = info.getType();
+                        if (type == android.media.AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+                            type == android.media.AudioDeviceInfo.TYPE_WIRED_HEADSET ||
+                            type == android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                            type == android.media.AudioDeviceInfo.TYPE_USB_HEADSET) {
+                            isHeadphones = true;
+                            break;
+                        }
+                    }
+                    
+                    // Si se conectaron audífonos y la música estaba pausada, la reanudamos automáticamente
+                    if (isHeadphones && ytPlayer != null && !isPlaying) {
+                        isUserIntentionallyPaused = false;
+                        ytPlayer.play();
+                    }
+                }
+            };
+            audioManager.registerAudioDeviceCallback(audioDeviceCallback, null);
+        }
+
+        // Registrar el callback para reanudar la música cuando otra app termina de sonar (Requiere Android O+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            audioPlaybackCallback = new android.media.AudioManager.AudioPlaybackCallback() {
+                @Override
+                public void onPlaybackConfigChanged(java.util.List<android.media.AudioPlaybackConfiguration> configs) {
+                    super.onPlaybackConfigChanged(configs);
+                    if (resumeOnFocusGain && ytPlayer != null && !isPlaying) {
+                        // Verificamos si ya ninguna otra app está reproduciendo música activamente
+                        if (!audioManager.isMusicActive()) {
+                            resumeOnFocusGain = false;
+                            isUserIntentionallyPaused = false;
+                            ytPlayer.play(); // Reanudar automáticamente la reproducción
+                        }
+                    }
+                }
+            };
+            audioManager.registerAudioPlaybackCallback(audioPlaybackCallback, null);
+        }
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -350,6 +435,13 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
                         }
                     }
                 }
+                
+                // Si la música se pausó y el usuario no fue quien la pausó, y hay otra música activa,
+                // significa que otra app (como un mensaje de voz o llamada) nos robó el foco de audio.
+                if (!isUserIntentionallyPaused && audioManager != null && audioManager.isMusicActive()) {
+                    resumeOnFocusGain = true;
+                }
+                
                 isPlaying = false;
                 isUserIntentionallyPaused = true;
                 bufferingHandler.removeCallbacks(bufferingRunnable);
@@ -517,6 +609,20 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
 
     public void onDestroy() {
         super.onDestroy();
+        // Liberar el receptor de audífonos desconectados
+        if (noisyReceiver != null) {
+            try {
+                unregisterReceiver(noisyReceiver);
+            } catch (Exception e) {}
+        }
+        // Liberar el callback de audífonos conectados
+        if (audioManager != null && audioDeviceCallback != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
+        }
+        // Liberar el callback de reproducción de audio
+        if (audioManager != null && audioPlaybackCallback != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            audioManager.unregisterAudioPlaybackCallback(audioPlaybackCallback);
+        }
         bufferingHandler.removeCallbacks(bufferingRunnable);
         if (youTubePlayerView != null) {
             youTubePlayerView.release();

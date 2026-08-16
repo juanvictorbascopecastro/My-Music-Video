@@ -37,3 +37,16 @@
 # Google Cast
 -keep class * implements com.google.android.gms.cast.framework.OptionsProvider
 -keep class com.youtube.musica.CastOptionsProvider { *; }
+
+# NewPipe Extractor y sus dependencias (Rhino, Jsoup, Nanojson)
+-keep class org.schabi.newpipe.extractor.** { *; }
+-dontwarn org.schabi.newpipe.extractor.**
+
+-keep class org.mozilla.javascript.** { *; }
+-dontwarn org.mozilla.javascript.**
+
+-keep class com.grack.nanojson.** { *; }
+-dontwarn com.grack.nanojson.**
+
+-keep class org.jsoup.** { *; }
+-dontwarn org.jsoup.**
