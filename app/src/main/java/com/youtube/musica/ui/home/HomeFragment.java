@@ -568,15 +568,18 @@ public class HomeFragment extends Fragment implements MusicListener, PlayerListe
     public void onStateChanged(String state) { }
 
     @Override
-    public void onPlayPauseNotification() {
+    public void onPlayNotification() {
         if (globalPlayer != null) {
-            if (isPlaying) {
-                isUserIntentionallyPaused = true;
-                globalPlayer.pause();
-            } else {
-                isUserIntentionallyPaused = false;
-                globalPlayer.play();
-            }
+            isUserIntentionallyPaused = false;
+            globalPlayer.play();
+        }
+    }
+
+    @Override
+    public void onPauseNotification() {
+        if (globalPlayer != null) {
+            isUserIntentionallyPaused = true;
+            globalPlayer.pause();
         }
     }
 

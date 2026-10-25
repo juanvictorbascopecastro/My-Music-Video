@@ -1,7 +1,8 @@
 package com.youtube.musica.interfaces;
 
 public interface PlayerListener {
-    void onPlayPauseNotification();
+    void onPlayNotification();
+    void onPauseNotification();
     void onNextNotification();
     void onPreviewNotification();
     void onPlaybackModeNotification();

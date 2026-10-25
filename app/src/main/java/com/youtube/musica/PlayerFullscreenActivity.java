@@ -767,24 +767,29 @@ public class PlayerFullscreenActivity extends AppCompatActivity implements DbMus
     }
 
     @Override
-    public void onPlayPauseNotification() {
+    public void onPlayNotification() {
         if (chromecastUtil != null && chromecastUtil.isCasting()) {
-            if (isPlaying) {
-                chromecastUtil.pause();
-                isPlaying = false;
-            } else {
-                chromecastUtil.play();
-                isPlaying = true;
-            }
+            chromecastUtil.play();
+            isPlaying = true;
             showNotification();
         } else if (ytPlayer != null) {
-            if (isPlaying) {
-                isUserIntentionallyPaused = true;
-                ytPlayer.pause();
-            } else {
-                isUserIntentionallyPaused = false;
-                ytPlayer.play();
-            }
+            isUserIntentionallyPaused = false;
+            ytPlayer.play();
+        }
+    }
+
+    @Override
+    public void onPauseNotification() {
+        if (chromecastUtil != null && chromecastUtil.isCasting()) {
+            chromecastUtil.pause();
+            isPlaying = false;
+            showNotification();
+        } else if (ytPlayer != null) {
+            // Marcar la pausa como del usuario y cancelar el reintento de buffering,
+            // para que ningún mecanismo de auto-reanudación vuelva a darle play.
+            isUserIntentionallyPaused = true;
+            bufferingHandler.removeCallbacks(bufferingRunnable);
+            ytPlayer.pause();
         }
     }
 

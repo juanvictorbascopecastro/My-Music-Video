@@ -56,14 +56,12 @@ public class NotificationHelper {
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public void onPlay() {
-                context.sendBroadcast(
-                        new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(context.getPackageName()));
+                context.sendBroadcast(new Intent(PlayerEventBroadcaster.ACTION_PLAY).setPackage(context.getPackageName()));
             }
 
             @Override
             public void onPause() {
-                context.sendBroadcast(
-                        new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(context.getPackageName()));
+                context.sendBroadcast(new Intent(PlayerEventBroadcaster.ACTION_PAUSE).setPackage(context.getPackageName()));
             }
 
             @Override
@@ -139,12 +137,13 @@ public class NotificationHelper {
                 new Intent(PlayerEventBroadcaster.ACTION_PREVIOUS).setPackage(context.getPackageName()),
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // PendingIntent para Play/Pause
+        // El botón envía la acción concreta que muestra (Pausa si está sonando, Play si no)
         PendingIntent playPauseIntent = PendingIntent.getBroadcast(
                 context,
                 0,
-                new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(context.getPackageName()),
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                new Intent(isPlaying ? PlayerEventBroadcaster.ACTION_PAUSE : PlayerEventBroadcaster.ACTION_PLAY).setPackage(context.getPackageName()),
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         // PendingIntent para Next
         PendingIntent nextIntent = PendingIntent.getBroadcast(

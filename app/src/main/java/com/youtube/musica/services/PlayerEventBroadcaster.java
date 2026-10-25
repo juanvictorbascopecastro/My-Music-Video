@@ -7,11 +7,14 @@ import android.content.IntentFilter;
 import com.youtube.musica.interfaces.PlayerListener;
 
 public class PlayerEventBroadcaster {
-    public static final String ACTION_PLAY_PAUSE = "ACTION_PLAY_PAUSE";
+    // Play y Pausa son acciones separadas (no un toggle): si el sistema o un dispositivo
+    // Bluetooth envía "pausa" cuando ya está pausado, no debe convertirse en "play".
+    public static final String ACTION_PLAY = "ACTION_PLAY";
+    public static final String ACTION_PAUSE = "ACTION_PAUSE";
     public static final String ACTION_NEXT = "ACTION_NEXT";
     public static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
     public static final String ACTION_PLAYBACK_MODE = "ACTION_PLAYBACK_MODE";
-    
+
     private static PlayerEventBroadcaster instance;
     private PlayerListener activeListener;
     private boolean isRegistered = false;
@@ -36,7 +39,8 @@ public class PlayerEventBroadcaster {
         this.activeListener = listener;
         if (!isRegistered) {
             IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(ACTION_PLAY_PAUSE);
+            intentFilter.addAction(ACTION_PLAY);
+            intentFilter.addAction(ACTION_PAUSE);
             intentFilter.addAction(ACTION_NEXT);
             intentFilter.addAction(ACTION_PREVIOUS);
             intentFilter.addAction(ACTION_PLAYBACK_MODE);
@@ -61,12 +65,15 @@ public class PlayerEventBroadcaster {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (activeListener == null) return;
-            
+
             String action = intent.getAction();
             if (action != null) {
                 switch (action) {
-                    case ACTION_PLAY_PAUSE:
-                        activeListener.onPlayPauseNotification();
+                    case ACTION_PLAY:
+                        activeListener.onPlayNotification();
+                        break;
+                    case ACTION_PAUSE:
+                        activeListener.onPauseNotification();
                         break;
                     case ACTION_NEXT:
                         activeListener.onNextNotification();

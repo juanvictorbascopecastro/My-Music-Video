@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_music, R.id.nav_youtube, R.id.nav_ctg, R.id.nav_youtube_search)
+                R.id.nav_home, R.id.nav_music, R.id.nav_recent, R.id.nav_youtube, R.id.nav_ctg, R.id.nav_youtube_search)
                 .setOpenableLayout(drawer)
                 .build();
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_music || id == R.id.nav_ctg) {
+            if (id == R.id.nav_music || id == R.id.nav_recent || id == R.id.nav_ctg) {
                 if (!AuthUtils.isLoggedIn()) {
                     pendingDestination = id;
                     AuthUtils.requireLogin(this, "Para acceder a tus carpetas y música guardada, necesitas iniciar sesión con tu cuenta de Google.");
