@@ -46,7 +46,7 @@ public class CtgAdapterHorizontal extends RecyclerView.Adapter<CtgAdapterHorizon
             holder.txtName.setTextColor(ContextCompat.getColor(context, R.color.primary));
         } else {
             holder.txtName.setBackgroundResource(0);
-            holder.txtName.setTextColor(ContextCompat.getColor(context, R.color.fondo));
+            holder.txtName.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
         }
         // final ViewHolder finalHoler = holder;
         holder.txtName.setOnClickListener(new View.OnClickListener() {

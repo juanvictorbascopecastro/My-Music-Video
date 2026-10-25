@@ -12,6 +12,7 @@
     <string name="media_route_menu_title">Enlazar TV</string>
     <string name="inicio">Inicio</string>
     <string name="my_music">Mi Musica</string>
+    <string name="recent">Últimas agregadas</string>
     <string name="youtube">YouTube</string>
     <string name="categories">Categorias</string>
     <string name="no_id_video">¡No se pudo obtener el ID del Video!\nVerifique que la direccion URL sea un video</string>
@@ -38,5 +39,6 @@
     <string name="saved">Guardado correctamente</string>
     <string name="updated">Datos actualizado correctamente</string>
     <string name="are_you_sure_you_want_delete">¿Estás seguro de que quieres eliminar el registro %1$s?</string>
+    <string name="no_categories">¡No tienes categorías!</string>
 
 </resources>

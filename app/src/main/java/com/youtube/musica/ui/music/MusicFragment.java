@@ -23,6 +23,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 import com.bumptech.glide.Glide;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -37,7 +41,7 @@ import java.util.ArrayList;
 import com.youtube.musica.PlayerFullscreenActivity;
 import com.youtube.musica.R;
 import com.youtube.musica.adapter.CtgAdapterHorizontal;
-import com.youtube.musica.adapter.VideoAdapter;
+import com.youtube.musica.adapter.MusicAdapter;
 import com.youtube.musica.databinding.FragmentMusicBinding;
 import com.youtube.musica.dialog.progress;
 import com.youtube.musica.firebase.Category;
@@ -69,13 +73,38 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
     private ObjectAnimator loadingAnimator = null;
 
     private FragmentMusicBinding binding;
-    public VideoAdapter recyclerViewAdapter;
+    public MusicAdapter recyclerViewAdapter;
     MusicViewModel musicViewModel;
     CtgViewModel ctgViewModel;
     private Music db;
     private Category ctgDb;
     private CategoryCollection categoryCollection;
     private RecyclerView recyclerViewCategory;
+
+    private final ActivityResultLauncher<Intent> playerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        float minutoExtra = data.getFloatExtra("minuto", 0f);
+                        int positionExtra = data.getIntExtra("position", 0);
+                        System.out.println("MINUTO: " + minutoExtra);
+                        System.out.println("POSICION: " + positionExtra);
+                        
+                        if (minutoExtra > 0) {
+                            currentState = "PLAYING";
+                        } else {
+                            currentState = "PAUSED";
+                        }
+                        updateFabIcon();
+                    }
+                } else {
+                    // El resultado no fue exitoso, manejar según sea necesario
+                    currentState = "PAUSED";
+                    updateFabIcon();
+                }
+            });
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -123,7 +152,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
                 bundle.putSerializable("categorias", ctgViewModel.getList().getValue());
                 bundle.putSerializable("list", list);
                 intent.putExtras(bundle);
-                startActivityForResult(intent, Constants.SECOND_ACTIVITY_REQUEST_CODE);
+                playerLauncher.launch(intent);
             }
         });
 
@@ -185,6 +214,7 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
         ctgDb.loadCtg().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                progress.diss();
                 if(!task.getResult().isEmpty()){
                     CategoryCollection ctg;
                     for(QueryDocumentSnapshot snapshot : task.getResult()) {
@@ -218,6 +248,10 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
             recyclerViewCategory.setAdapter(ctgAdapterHorizontal);
         } else {
             recyclerViewCategory.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+            txt_no_register.setText(getString(R.string.no_categories));
+            txt_no_register.setVisibility(View.VISIBLE);
+            fab_container.setVisibility(View.GONE);
         }
     }
 
@@ -241,11 +275,11 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
      */
     private void showData(){
         progressBar.setVisibility(View.GONE);
-        recyclerViewAdapter = new VideoAdapter(list, this.getLifecycle(), MusicFragment.this);
+        recyclerViewAdapter = new MusicAdapter(list, this.getLifecycle(), MusicFragment.this);
         recycler_view.setAdapter(recyclerViewAdapter);
         recycler_view.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerViewAdapter.notifyDataSetChanged();
         if(list.isEmpty()) {
+            txt_no_register.setText(getString(R.string.no_register));
             txt_no_register.setVisibility(View.VISIBLE);
             fab_container.setVisibility(View.GONE);
         }else {
@@ -277,6 +311,11 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
     }
 
     @Override
+    public void onVideoLongClicked(int position) {
+        // Do nothing for now in MusicFragment
+    }
+
+    @Override
     public void onNewRegister(String data) {
 
     }
@@ -288,7 +327,11 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
 
     @Override
     public void onDeletePosition(int index) {
-        msjConfirDelete(index);
+        if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+            msjConfirDelete(index);
+        } else {
+            com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+        }
     }
 
     private void msjConfirDelete(int index){
@@ -348,31 +391,5 @@ public class MusicFragment extends Fragment implements MusicListener, DbMusicLis
             }
         }
         updateFabIcon();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.SECOND_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    int minutoExtra = data.getIntExtra("minuto", 0);
-                    int positionExtra = data.getIntExtra("position", 0);
-                    System.out.println("MINUTO: " + minutoExtra);
-                    System.out.println("POSICION: " + positionExtra);
-                    
-                    if (minutoExtra > 0) {
-                        currentState = "PLAYING";
-                    } else {
-                        currentState = "PAUSED";
-                    }
-                    updateFabIcon();
-                }
-            } else {
-                // El resultado no fue exitoso, manejar según sea necesario
-                currentState = "PAUSED";
-                updateFabIcon();
-            }
-        }
     }
 }

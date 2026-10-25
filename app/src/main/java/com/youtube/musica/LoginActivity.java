@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+@SuppressWarnings("deprecation")
 public class LoginActivity extends AppCompatActivity {
 
     private GoogleSignInClient mGoogleSignInClient;
@@ -76,6 +77,13 @@ public class LoginActivity extends AppCompatActivity {
 
         progressBar = findViewById(R.id.progress_bar);
         btnGoogleSignIn = findViewById(R.id.btn_google_signin);
+        
+        android.widget.TextView tvSubtitle = findViewById(R.id.tv_login_subtitle);
+        String loginMessage = getIntent().getStringExtra("login_message");
+        if (loginMessage != null && !loginMessage.isEmpty()) {
+            tvSubtitle.setText(loginMessage);
+            tvSubtitle.setTextColor(getResources().getColor(android.R.color.holo_red_dark)); // Make it stand out
+        }
 
         int webClientIdRes = getResources().getIdentifier("default_web_client_id", "string", getPackageName());
         if (webClientIdRes == 0) {
@@ -121,7 +129,25 @@ public class LoginActivity extends AppCompatActivity {
                     progressBar.setVisibility(View.GONE);
                     btnGoogleSignIn.setEnabled(true);
                     if (task.isSuccessful()) {
-                        goToMainActivity();
+                        boolean isNewUser = false;
+                        if (task.getResult() != null && task.getResult().getAdditionalUserInfo() != null) {
+                            isNewUser = task.getResult().getAdditionalUserInfo().isNewUser();
+                        }
+
+                        if (isNewUser) {
+                            // Crear carpeta por defecto para el nuevo usuario
+                            java.util.HashMap<String, Object> defaultCategory = new java.util.HashMap<>();
+                            defaultCategory.put("name", "Mis Favoritos");
+                            defaultCategory.put("description", "Carpeta creada por defecto");
+                            defaultCategory.put("date", new com.google.firebase.Timestamp(new java.util.Date()));
+                            
+                            com.youtube.musica.firebase.Category dbCategory = new com.youtube.musica.firebase.Category();
+                            dbCategory.addCtg(defaultCategory).addOnCompleteListener(t -> {
+                                goToMainActivity();
+                            });
+                        } else {
+                            goToMainActivity();
+                        }
                     } else {
                         Toast.makeText(LoginActivity.this, "Authentication Failed.", Toast.LENGTH_SHORT).show();
                     }
@@ -129,7 +155,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void goToMainActivity() {
-        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        if (isTaskRoot()) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        }
         finish();
     }
 }

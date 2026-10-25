@@ -10,4 +10,5 @@ public interface MusicListener {
     void onSetPosition(int position);
     void onStateChanged(String state);
     void onVideoClicked(int position);
+    void onVideoLongClicked(int position);
 }

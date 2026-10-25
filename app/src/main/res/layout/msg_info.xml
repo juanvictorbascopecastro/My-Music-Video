@@ -16,7 +16,7 @@
         android:layout_gravity="center"
         android:fontFamily="sans-serif"
         android:text="@string/warning"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/text_primary"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -27,7 +27,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
         android:elevation="5dp"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/text_primary"
         android:gravity="center"
         android:textSize="18sp" />
 

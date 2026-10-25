@@ -8,6 +8,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -31,7 +33,12 @@ public class Music extends Firebase {
         this.context = context;
         this.musicListener = musicListener;
     }
-    
+
+    // Para usos sin interfaz (ViewModels): sin diálogo de progreso ni DbMusicListener
+    public Music() {
+        super();
+    }
+
     private String getIdUser() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         return currentUser != null ? currentUser.getUid() : "";
@@ -54,6 +61,20 @@ public class Music extends Firebase {
     public Task<Void>  deleteMusic(String code){
         Task<Void> query = db.collection(Constants.MUSIC_COLLECTION).document(code).delete();
         return query;
+    }
+
+    /**
+     * Escucha en tiempo real las últimas canciones agregadas por el usuario, de todas las
+     * categorías, ordenadas por fecha de registro (de la más reciente a la más antigua).
+     * El listener se vuelve a llamar cada vez que se agrega, edita o elimina una canción.
+     * Requiere en Firestore un índice compuesto sobre "musics": idUser (Asc) + date (Desc).
+     */
+    public ListenerRegistration listenRecent(int limit, EventListener<QuerySnapshot> listener){
+        return db.collection(Constants.MUSIC_COLLECTION)
+                .whereEqualTo("idUser", getIdUser())
+                .orderBy("date", Query.Direction.DESCENDING)
+                .limit(limit)
+                .addSnapshotListener(listener);
     }
 
     public void LoadByCtg(String ctg, boolean progressVisible){

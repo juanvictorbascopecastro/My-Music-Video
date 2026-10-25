@@ -4,6 +4,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 
@@ -19,11 +22,20 @@ public class Category extends Firebase {
         return currentUser != null ? currentUser.getUid() : "";
     }
 
-    public Task loadCtg(){
-        Task query = db.collection(Constants.CATEGORIES_COLLECTION)
+    public Task<com.google.firebase.firestore.QuerySnapshot> loadCtg(){
+        Task<com.google.firebase.firestore.QuerySnapshot> query = db.collection(Constants.CATEGORIES_COLLECTION)
                 .whereEqualTo("idUser", getIdUser())
                 .get();
         return query;
+    }
+
+    /**
+     * Escucha en tiempo real las categorías del usuario.
+     */
+    public ListenerRegistration listenCtg(EventListener<QuerySnapshot> listener){
+        return db.collection(Constants.CATEGORIES_COLLECTION)
+                .whereEqualTo("idUser", getIdUser())
+                .addSnapshotListener(listener);
     }
 
     public Task<DocumentReference> addCtg(HashMap<String, Object> object){

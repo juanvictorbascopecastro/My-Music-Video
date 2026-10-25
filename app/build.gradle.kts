@@ -15,7 +15,7 @@ android {
         applicationId = "com.youtube.musica"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -31,11 +31,13 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -75,4 +77,12 @@ dependencies {
     //implementation("com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.23")
     implementation("androidx.mediarouter:mediarouter:1.8.1")
     implementation("androidx.media:media:1.8.0")
+    
+    // NewPipeExtractor para recomendaciones y búsqueda
+    implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.22.7")
+    // OkHttp para las solicitudes de red del extractor
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    
+    // Core Library Desugaring para compatibilidad de APIs Java nuevas en versiones antiguas de Android
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

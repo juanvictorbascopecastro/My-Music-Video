@@ -5,4 +5,7 @@ public class Constants {
     public static final String CATEGORIES_COLLECTION = "categories";
 
     public static final int SECOND_ACTIVITY_REQUEST_CODE = 10;
+
+    // Cantidad máxima de canciones que muestra la pantalla "Últimas agregadas"
+    public static final int RECENT_MUSIC_LIMIT = 50;
 }

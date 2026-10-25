@@ -98,8 +98,12 @@ public class YoutubeSearchFragment extends Fragment {
             startActivity(intent);
         }, item -> {
             // Long click: open AddMusic dialog
-            String videoUrl = "https://www.youtube.com/watch?v=" + item.getVideoId();
-            new AddMusic(getContext(), ctgViewModel.getList().getValue(), videoUrl, item.getVideoId(), item.getTitle());
+            if (com.youtube.musica.utils.AuthUtils.isLoggedIn()) {
+                String videoUrl = "https://www.youtube.com/watch?v=" + item.getVideoId();
+                new AddMusic(getContext(), ctgViewModel.getList().getValue(), videoUrl, item.getVideoId(), item.getTitle());
+            } else {
+                com.youtube.musica.utils.AuthUtils.requireLogin(getContext());
+            }
         });
         rvYoutubeSearch.setAdapter(adapter);
 
@@ -129,7 +133,7 @@ public class YoutubeSearchFragment extends Fragment {
         executor.execute(() -> {
             try {
                 String encodedQuery = URLEncoder.encode(query, "UTF-8");
-                String urlStr = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=" + encodedQuery + "&type=video&key=" + API_KEY;
+                String urlStr = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&videoEmbeddable=true&q=" + encodedQuery + "&type=video&key=" + API_KEY;
                 
                 URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();

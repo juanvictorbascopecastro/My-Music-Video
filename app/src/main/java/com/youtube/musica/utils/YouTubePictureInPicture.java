@@ -41,7 +41,7 @@ public class YouTubePictureInPicture {
             int playPauseIconRes = isPlaying ? R.drawable.ic_pause : R.drawable.ic_play;
             PendingIntent playPauseIntent = PendingIntent.getBroadcast(
                     activity, 2,
-                    new Intent(PlayerEventBroadcaster.ACTION_PLAY_PAUSE).setPackage(activity.getPackageName()),
+                    new Intent(isPlaying ? PlayerEventBroadcaster.ACTION_PAUSE : PlayerEventBroadcaster.ACTION_PLAY).setPackage(activity.getPackageName()),
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
             );
             Icon iconPlayPause = Icon.createWithResource(activity, playPauseIconRes);
